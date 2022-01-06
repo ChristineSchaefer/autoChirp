@@ -237,18 +237,26 @@ public class TweetController {
 			return mv;
 		}
 
-		if (!imageUrl.isEmpty()) {
-			try {
-				if (ImageIO.read(new URL(imageUrl)) == null) {
+		if(!imageUrl.isEmpty()){
+				try{
+					if(ImageIO.read(new URL(imageUrl)) == null){
+						ModelAndView mv = new ModelAndView("error");
+						mv.addObject("error", "Sorry, but the selected image cannot be found at the given URL.");
+						return mv;
+					}
+				} catch(Exception e) {
 					ModelAndView mv = new ModelAndView("error");
-					mv.addObject("error", "Sorry, but the selected image has an unsupported format.");
+					if (!imageUrl.endsWith(".jpg") || !imageUrl.endsWith(".png") || !imageUrl.endsWith(".gif") || !imageUrl.endsWith(".webp")) {
+						if (imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".tiff")) {
+							mv.addObject("error", "Sorry, but the selected image has an unsupported format. Supported formats: PNG, JPG, GIF, WEBP.");
+						} else {
+							mv.addObject("error", "The image URL must be a valid url. Please check the given path.");
+						}
+					} else {
+						mv.addObject("error", "The image URL must be a valid url. Please check the given path.");
+					}
 					return mv;
 				}
-			} catch (Exception e) {
-				ModelAndView mv = new ModelAndView("error");
-				mv.addObject("error", "The image URL must be a valid url.");
-				return mv;
-			}
 		}
 
 		if (latitude < -90 || latitude > 90) {
@@ -381,16 +389,24 @@ public class TweetController {
 			return mv;
 		}
 
-		if (!imageUrl.isEmpty()) {
-			try {
-				if (ImageIO.read(new URL(imageUrl)) == null) {
+		if(!imageUrl.isEmpty()){
+			try{
+				if(ImageIO.read(new URL(imageUrl)) == null){
 					ModelAndView mv = new ModelAndView("error");
-					mv.addObject("error", "Sorry, but the selected image has an unsupported format.");
+					mv.addObject("error", "Sorry, but the selected image cannot be found at the given URL.");
 					return mv;
 				}
-			} catch (Exception e) {
+			} catch(Exception e) {
 				ModelAndView mv = new ModelAndView("error");
-				mv.addObject("error", "The image URL must be a valid url.");
+				if (!imageUrl.endsWith(".jpg") || !imageUrl.endsWith(".png") || !imageUrl.endsWith(".gif") || !imageUrl.endsWith(".webp")) {
+					if (imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".tiff")) {
+						mv.addObject("error", "Sorry, but the selected image has an unsupported format. Supported formats: PNG, JPG, GIF, WEBP.");
+					} else {
+						mv.addObject("error", "The image URL must be a valid url. Please check the given path.");
+					}
+				} else {
+					mv.addObject("error", "The image URL must be a valid url. Please check the given path.");
+				}
 				return mv;
 			}
 		}
@@ -522,16 +538,24 @@ public class TweetController {
 			return mv;
 		}
 
-		if (!imageUrl.isEmpty()) {
-			try {
-				if (ImageIO.read(new URL(imageUrl)) == null) {
+		if(!imageUrl.isEmpty()){
+			try{
+				if(ImageIO.read(new URL(imageUrl)) == null){
 					ModelAndView mv = new ModelAndView("error");
-					mv.addObject("error", "Sorry, but the selected image has an unsupported format.");
+					mv.addObject("error", "Sorry, but the selected image cannot be found at the given URL.");
 					return mv;
 				}
-			} catch (Exception e) {
+			} catch(Exception e) {
 				ModelAndView mv = new ModelAndView("error");
-				mv.addObject("error", "The image URL must be a valid url.");
+				if (!imageUrl.endsWith(".jpg") || !imageUrl.endsWith(".png") || !imageUrl.endsWith(".gif") || !imageUrl.endsWith(".webp")) {
+					if (imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".tiff")) {
+						mv.addObject("error", "Sorry, but the selected image has an unsupported format. Supported formats: PNG, JPG, GIF, WEBP.");
+					} else {
+						mv.addObject("error", "The image URL must be a valid url. Please check the given path.");
+					}
+				} else {
+					mv.addObject("error", "The image URL must be a valid url. Please check the given path.");
+				}
 				return mv;
 			}
 		}
