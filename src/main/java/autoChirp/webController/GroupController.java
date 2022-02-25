@@ -317,7 +317,7 @@ public class GroupController {
         }
 
         File file;
-        TweetGroup tweetGroup;
+        List<TweetGroup> tweetGroup = new ArrayList<>();
         TweetFactory tweeter = new TweetFactory(dateformats);
 
         try {
@@ -338,11 +338,14 @@ public class GroupController {
         }
 
         List<Tweet> trimmed = new ArrayList<Tweet>();
-        for (Tweet t : tweetGroup.tweets)
-            if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
-                trimmed.add(t);
-        int groupID = DBConnector.insertTweetGroup(tweetGroup, userID);
-        file.delete();
+        int groupID = 0;
+        for(TweetGroup tw : tweetGroup) {
+            for (Tweet t : tw.tweets)
+                if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
+                    trimmed.add(t);
+            groupID = DBConnector.insertTweetGroup(tw, userID);
+            file.delete();
+        }
 
         if (!trimmed.isEmpty()) {
             // String trim = new String();
@@ -403,7 +406,7 @@ public class GroupController {
         }
 
         File file;
-        TweetGroup tweetGroup;
+        List<TweetGroup> tweetGroup = new ArrayList<>();
         TweetFactory tweeter = new TweetFactory(dateformats);
 
         try {
@@ -426,12 +429,15 @@ public class GroupController {
         }
 
         List<Tweet> trimmed = new ArrayList<Tweet>();
-        for (Tweet t : tweetGroup.tweets)
-            if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
-                trimmed.add(t);
+        int groupID = 0;
+        for(TweetGroup tw : tweetGroup) {
+            for (Tweet t : tw.tweets)
+                if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
+                    trimmed.add(t);
 
-        int groupID = DBConnector.insertTweetGroup(tweetGroup, userID);
-        file.delete();
+            groupID = DBConnector.insertTweetGroup(tw, userID);
+            file.delete();
+        }
 
         if (!trimmed.isEmpty()) {
             // String trim = new String();

@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
  * @author Alena Geduldig
  */
 @Configuration
-@EnableAutoConfiguration
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {
 

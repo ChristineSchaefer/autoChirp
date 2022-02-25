@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -128,7 +130,8 @@ public class TweetFactory {
 	 *            the calculated tweet-date
 	 * @return a new tweetGroup with a tweet for each row in the file
 	 */
-	public TweetGroup getTweetsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding) throws MalformedTSVFileException {
+	public List<TweetGroup> getTweetsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding) throws MalformedTSVFileException {
+		List<TweetGroup> toReturn = new ArrayList<>();
 		TweetGroup group = new TweetGroup(title, description);
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tsvFile), encoding));
@@ -136,6 +139,7 @@ public class TweetFactory {
 			String content;
 			String date;
 			String time;
+			String thread;
 			int delayInSeconds = -1;
 			LocalDateTime lastLDT = null;
 			boolean useDelay = false;
@@ -193,39 +197,52 @@ public class TweetFactory {
 					ldt = lastLDT.plusSeconds(delayInSeconds);
 				}
 
+				Map<String, TweetGroup> threadGroups = new HashMap<>();
+				thread = split[3].trim();
+
+				if(thread.length() > 0){
+					if(threadGroups.containsKey(thread)){
+						group = threadGroups.get(thread);
+					}
+					else {
+						group = new TweetGroup(title + "_Thread_" + thread, description);
+						threadGroups.put(thread, group);
+					}
+				}
+
 				// get tweet-image
 				String imageUrl = null;
-				if (split.length > 3) {
-					imageUrl = split[3];
+				if (split.length > 4) {
+					imageUrl = split[4];
 					if(imageUrl.length() > 0){
 						try {
 							Resource image = new UrlResource(imageUrl);
 						} catch (Exception e) {
-							throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 4)");
+							throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 5)");
 						}
 					}
 				}
 				// get latitude
 				float latitude = 0;
 				float longitude = 0;
-				if (split.length > 4) {
+				if (split.length > 5) {
 					try{
-						String number = split[4];
+						String number = split[5];
 						number = number.replace(",", ".");
 						latitude = Float.parseFloat(number);
 					}
 					catch(NumberFormatException e){
-						throw new MalformedTSVFileException(row, 5, split[4], "malformed latitude: "+split[4]+"   (row: "+row+" column: 5)" );
+						throw new MalformedTSVFileException(row, 6, split[5], "malformed latitude: "+split[4]+"   (row: "+row+" column: 6)" );
 					}
 					// get longitude
-					if (split.length > 5) {
+					if (split.length > 6) {
 						try{
-							String number = split[5];
+							String number = split[6];
 							number = number.replace(",", "\\.");
-							longitude = Float.parseFloat(split[5]);
+							longitude = Float.parseFloat(split[6]);
 						}
 						catch(NumberFormatException e){
-							throw new MalformedTSVFileException(row, 6, split[5], "malformed longitude: "+split[5]+"   (row: "+row+" column: 6)");
+							throw new MalformedTSVFileException(row, 7, split[6], "malformed longitude: "+split[5]+"   (row: "+row+" column: 7)");
 						}
 					}
 					else{
@@ -265,13 +282,14 @@ public class TweetFactory {
 				line = in.readLine();
 				row++;
 				lastLDT = ldt;
+				toReturn.add(group);
 			}
 			in.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
-		return group;
+		return toReturn;
 	}
 
 	/**
