@@ -132,20 +132,21 @@ public class TweetFactory {
 	 */
 	public List<TweetGroup> getTweetsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding) throws MalformedTSVFileException {
 		List<TweetGroup> toReturn = new ArrayList<>();
-		TweetGroup group = new TweetGroup(title, description);
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tsvFile), encoding));
 			String line = in.readLine();
 			String content;
 			String date;
 			String time;
-			String thread;
 			int delayInSeconds = -1;
 			LocalDateTime lastLDT = null;
 			boolean useDelay = false;
 			LocalDateTime ldt;
 			Tweet tweet;
 			int row = 1;
+			Map<String, TweetGroup> threadGroups = new HashMap<>();
+			TweetGroup group = new TweetGroup(title, description);
+			threadGroups.put("default", group);
 			while (line != null) {
 				if(line.equals("")){
 					line = in.readLine();
@@ -197,17 +198,22 @@ public class TweetFactory {
 					ldt = lastLDT.plusSeconds(delayInSeconds);
 				}
 
-				Map<String, TweetGroup> threadGroups = new HashMap<>();
-				thread = split[3].trim();
+				String thread = null;
+				if(split.length > 3) {
+					thread = split[3].trim();
 
-				if(thread.length() > 0){
-					if(threadGroups.containsKey(thread)){
-						group = threadGroups.get(thread);
+					if (thread.length() > 0) {
+						if (threadGroups.containsKey(thread)) {
+							group = threadGroups.get(thread);
+						} else {
+							group = new TweetGroup(title + "_Thread_" + thread, description);
+							group.setThreaded(true);
+							threadGroups.put(thread, group);
+						}
 					}
-					else {
-						group = new TweetGroup(title + "_Thread_" + thread, description);
-						threadGroups.put(thread, group);
-					}
+				}
+				else {
+					group = threadGroups.get("default");
 				}
 
 				// get tweet-image
@@ -282,8 +288,11 @@ public class TweetFactory {
 				line = in.readLine();
 				row++;
 				lastLDT = ldt;
-				toReturn.add(group);
 			}
+			for (String thread : threadGroups.keySet()){
+				toReturn.add(threadGroups.get(thread));
+			}
+			threadGroups = new HashMap<>();
 			in.close();
 		} catch (IOException e) {
 			e.printStackTrace();

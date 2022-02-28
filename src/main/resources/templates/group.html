@@ -317,6 +317,23 @@
 								</div>
 							</div>
 						</div>
+                        <!--TODO-->
+						<div class="form-group">
+							<label class="col-sm-2 control-label">Conntected Groups</label>
+							<div class="col-sm-10">
+								<a
+										th:if="${#httpServletRequest.requestURI.startsWith(#httpServletRequest.getContextPath() + '/groups/view/')}"
+										th:href="@{/groups/toggle/} + ${tweetGroup.groupID}"
+										class="btn"
+										th:classappend="${tweetGroup.enabled} ? btn-warning : btn-success"><span
+										class="glyphicon"
+										th:classappend="${tweetGroup.enabled} ? glyphicon-pause : glyphicon-play"
+										aria-hidden="true"></span> <span
+										th:text="${tweetGroup.enabled} ? 'Disable group' : 'Enable group'"
+										th:remove="tag"></span>
+								</a>
+							</div>
+						</div>
 					</form>
 				</div>
 			</div>
