@@ -23,10 +23,10 @@ public class HomeController {
 	 *
 	 * @return Redirection to /home
 	 */
-	@RequestMapping(value = "/")
+	/*@RequestMapping(value = "/")
 	public String index() {
 		return "redirect:/home";
-	}
+	}*/
 
 	/**
 	 * A HTTP GET request handler, responsible for serving /home.

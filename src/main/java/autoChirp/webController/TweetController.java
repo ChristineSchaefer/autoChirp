@@ -3,11 +3,9 @@ package autoChirp.webController;
 import java.net.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -463,8 +461,9 @@ public class TweetController {
 			@RequestParam("tweetDate") String tweetDate, @RequestParam("tweetTime") String tweetTime,
 			@RequestParam("imageUrl") String imageUrl,
 			@RequestParam(name = "latitude", defaultValue = "0.0") float latitude,
-			@RequestParam(name = "longitude", defaultValue = "0.0") float longitude) {
+			@RequestParam(name = "longitude", defaultValue = "0.0") float longitude, ZoneId clientZoneId) {
 
+		System.out.println("ZoneId: " + clientZoneId);
 		if (session.getAttribute("account") == null)
 			return new ModelAndView("redirect:/account");
 
@@ -528,7 +527,7 @@ public class TweetController {
 		if (!tweetEntry.tweetDate.equals(tweetDate + " " + tweetTime)) {
 			TweetScheduler.descheduleTweet(tweetID);
 			TweetGroup tweetGroup = DBConnector.getTweetGroupForUser(userID, tweetEntry.groupID);
-			TweetScheduler.scheduleTweetsForUser(tweetGroup.tweets, userID);
+			TweetScheduler.scheduleTweetsForUser(tweetGroup.tweets, userID, clientZoneId);
 		}
 
 		return new ModelAndView("redirect:/groups/view/" + tweetEntry.groupID);

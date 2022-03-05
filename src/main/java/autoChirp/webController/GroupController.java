@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -749,7 +750,8 @@ public class GroupController {
      * @return Redirect-view to the toggled group overview
      */
     @RequestMapping(value = "/toggle/{groupID}")
-    public String toggleGroup(@PathVariable int groupID, HttpServletRequest request) {
+    public String toggleGroup(@PathVariable int groupID, HttpServletRequest request, ZoneId clientZoneId) {
+        System.out.println("clientZoneId: " + clientZoneId);
         if (session.getAttribute("account") == null)
             return "redirect:/account";
         int userID = Integer.parseInt(((Hashtable<String, String>) session.getAttribute("account")).get("userID"));
@@ -759,7 +761,7 @@ public class GroupController {
         DBConnector.updateGroupStatus(groupID, enabled, userID);
 
         if (enabled)
-            TweetScheduler.scheduleTweetsForUser(tweetGroup.tweets, userID);
+            TweetScheduler.scheduleTweetsForUser(tweetGroup.tweets, userID, clientZoneId);
         String referer = request.getHeader("Referer");
         return "redirect:" + referer;
     }
