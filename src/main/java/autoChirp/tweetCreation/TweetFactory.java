@@ -128,7 +128,7 @@ public class TweetFactory {
 	 * @param delay
 	 *            - the number of years between the written date in the file and
 	 *            the calculated tweet-date
-	 * @return a new tweetGroup with a tweet for each row in the file
+	 * @return a list of tweetGroups with a tweet for each row in the file
 	 */
 	public List<TweetGroup> getTweetsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding) throws MalformedTSVFileException {
 		List<TweetGroup> toReturn = new ArrayList<>();
@@ -144,7 +144,9 @@ public class TweetFactory {
 			LocalDateTime ldt;
 			Tweet tweet;
 			int row = 1;
+			// map with thread-name as key and tweetgroup as value to save all groups from imported table
 			Map<String, TweetGroup> threadGroups = new HashMap<>();
+			// default group = group name and description from user input
 			TweetGroup group = new TweetGroup(title, description);
 			threadGroups.put("default", group);
 			while (line != null) {
@@ -198,6 +200,8 @@ public class TweetFactory {
 					ldt = lastLDT.plusSeconds(delayInSeconds);
 				}
 
+				// new: create thread-groups
+				// connected tweets to a thread are labeled in column "Threading"
 				String thread = null;
 				if(split.length > 3) {
 					thread = split[3].trim();
@@ -206,6 +210,7 @@ public class TweetFactory {
 						if (threadGroups.containsKey(thread)) {
 							group = threadGroups.get(thread);
 						} else {
+							// create new group for each thread
 							group = new TweetGroup(title + "_Thread_" + thread, description);
 							group.setThreaded(true);
 							threadGroups.put(thread, group);

@@ -317,20 +317,18 @@
 								</div>
 							</div>
 						</div>
-                        <!--TODO-->
-						<div class="form-group">
+                        <!--Connected Groups = groups with threads or main-group.
+                        Groups are selected according to the same description and are
+                        displayed only if there is at least one connected group.-->
+						<div class="form-group" th:if="${not #lists.isEmpty(threadedGroups)}">
 							<label class="col-sm-2 control-label">Conntected Groups</label>
 							<div class="col-sm-10">
 								<a
-										th:if="${#httpServletRequest.requestURI.startsWith(#httpServletRequest.getContextPath() + '/groups/view/')}"
-										th:href="@{/groups/toggle/} + ${tweetGroup.groupID}"
-										class="btn"
-										th:classappend="${tweetGroup.enabled} ? btn-warning : btn-success"><span
-										class="glyphicon"
-										th:classappend="${tweetGroup.enabled} ? glyphicon-pause : glyphicon-play"
-										aria-hidden="true"></span> <span
-										th:text="${tweetGroup.enabled} ? 'Disable group' : 'Enable group'"
-										th:remove="tag"></span>
+                                        th:each="tw : ${threadedGroups}"
+                                        th:href="@{'/groups/view/' + ${tw.groupID}}"
+										class="btn btn-primary">
+                                        <span class="glyphicon glyphicon-th" aria-hidden="true"></span>
+                                        <span th:text="${tw.title}"></span>
 								</a>
 							</div>
 						</div>
