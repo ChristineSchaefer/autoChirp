@@ -108,7 +108,9 @@ public class TweetScheduler {
 			now = LocalDateTime.now();
 			ZonedDateTime znow = now.atZone(serverZoneId).withZoneSameInstant(utcZoneId);
 			ZonedDateTime zdt = ldt.atZone(clientZoneId).withZoneSameInstant(utcZoneId);
+			System.out.println("znow: " + znow + ", zdt: " + zdt);
 			delay = ChronoUnit.SECONDS.between(znow, zdt);
+			System.out.println("Delay: " + delay);
 
 			//tweet-time is in the past
 			if (delay < 0) {

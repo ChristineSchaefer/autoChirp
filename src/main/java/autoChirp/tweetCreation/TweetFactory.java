@@ -8,16 +8,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.tomcat.jni.Local;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
@@ -51,11 +51,13 @@ public class TweetFactory {
 	// a formatter to normalize the different input formats
 	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+	private ZoneId serverZoneId = ZoneOffset.ofTotalSeconds(
+			TimeZone.getDefault().getRawOffset() / 1000);
 	/**
 	 * sets the current year and reads the accepted formats for date-inputs from dateTimeFormats.txt
 	 */
 	public TweetFactory(String dateFormatsPath) {
-		currentYear = LocalDateTime.now().getYear();
+		currentYear = LocalDateTime.now().atZone(serverZoneId).withZoneSameInstant(ZoneId.of("UTC")).getYear();
 		this.dateFormatsFile = new File(dateFormatsPath);
 		readDateFormatsFromFile();
 	}
@@ -128,10 +130,12 @@ public class TweetFactory {
 	 *            the calculated tweet-date
 	 * @return a new tweetGroup with a tweet for each row in the file
 	 */
-	public TweetGroup getTweetsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding) throws MalformedTSVFileException {
+	public TweetGroup getTweetsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding, ZoneId clientZoneId) throws MalformedTSVFileException {
 		TweetGroup group = new TweetGroup(title, description);
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tsvFile), encoding));
+			System.out.println("clientZoneId: " + clientZoneId);
+			ZoneId utcZoneId = ZoneId.of("UTC");
 			String line = in.readLine();
 			String content;
 			String date;
@@ -140,6 +144,7 @@ public class TweetFactory {
 			LocalDateTime lastLDT = null;
 			boolean useDelay = false;
 			LocalDateTime ldt;
+			ZonedDateTime zdt;
 			Tweet tweet;
 			int row = 1;
 			while (line != null) {
@@ -189,7 +194,7 @@ public class TweetFactory {
 							}
 						}
 					
-					
+
 					ldt = lastLDT.plusSeconds(delayInSeconds);
 				}
 
@@ -242,9 +247,12 @@ public class TweetFactory {
 				// add delay
 				ldt = ldt.plusYears(delay);
 
+				//refactor ldt to zdt (UTC)
+				zdt = ldt.atZone(clientZoneId).withZoneSameInstant(utcZoneId);
 
+				// calculate differences in UTC
 				if (delay == 0) {
-					while (ldt.isBefore(LocalDateTime.now())) {
+					while (zdt.isBefore(LocalDateTime.now().atZone(serverZoneId).withZoneSameInstant(utcZoneId))) {
 						ldt = ldt.plusYears(1);
 					}
 				}
@@ -258,7 +266,10 @@ public class TweetFactory {
 				if (!midnight) {
 					formattedDate = formattedDate.replace(" 00:00", " 12:00");
 				}
-				if (ldt.isAfter(LocalDateTime.now())) {
+				//if ldt has changed, correct zdt
+				zdt = ldt.atZone(clientZoneId).withZoneSameInstant(utcZoneId);
+
+				if (zdt.isAfter(LocalDateTime.now().atZone(serverZoneId).withZoneSameInstant(utcZoneId))) {
 					tweet = new Tweet(formattedDate, content, imageUrl, longitude, latitude);
 					group.addTweet(tweet);
 				}
@@ -335,7 +346,7 @@ public class TweetFactory {
 				tweets.add(tweet);
 			}
 		}
-		currentYear = LocalDateTime.now().getYear();
+		currentYear = LocalDateTime.now().atZone(serverZoneId).withZoneSameInstant(ZoneId.of("UTC")).getYear();
 		TweetGroup group = new TweetGroup(doc.getTitle(), description);
 		group.setTweets(tweets);
 		return group;

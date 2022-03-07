@@ -76,6 +76,7 @@ public class Application extends SpringBootServletInitializer {
 		return r;
 	}
 
+	//TODO: improve way of checking tz
 	@Bean
 	public WebMvcConfigurer configurer () {
 		return new WebMvcConfigurerAdapter() {
@@ -109,7 +110,6 @@ public class Application extends SpringBootServletInitializer {
 				TweetScheduler.scheduleTweetsForUser(group.tweets, userID);
 			}
 		}
-		System.out.println("Application initialized");
 	}
 
 }

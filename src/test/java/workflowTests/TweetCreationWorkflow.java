@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +81,7 @@ public class TweetCreationWorkflow {
 		File testFile = new File("src/test/resources/testTSVFile_Image_Locations.txt");
 		
 		//without delay
-		TweetGroup group = factory.getTweetsFromTSVFile(testFile, "testTitle", "testDescription", 0, "UTF-8");
+		TweetGroup group = factory.getTweetsFromTSVFile(testFile, "testTitle", "testDescription", 0, "UTF-8", ZoneId.of("Europe/Berlin"));
 		Assert.assertEquals(group.tweets.size(), 3);
 		System.out.println("Title: " + group.title);
 		System.out.println("Description: " + group.description);
@@ -91,7 +92,7 @@ public class TweetCreationWorkflow {
 			System.out.println(tweet.tweetDate+": "+ tweet.content);
 		}
 		//with delay
-		group = factory.getTweetsFromTSVFile(testFile, "testTitle", "testDescription", 3, "UTF-8");
+		group = factory.getTweetsFromTSVFile(testFile, "testTitle", "testDescription", 3, "UTF-8", ZoneId.of("Europe/Berlin"));
 		Assert.assertEquals(group.tweets.size(), 3);
 		System.out.println("Title: " + group.title);
 		System.out.println("Description: " + group.description);
@@ -112,7 +113,7 @@ public class TweetCreationWorkflow {
 	public void dateTimeFomatsTest() throws IOException, MalformedTSVFileException{
 		File file = new File("src/test/resources/testTSVFile_DateFormats.txt");
 		TweetFactory factory = new TweetFactory("src/main/resources/parser/datetime.formats");
-		TweetGroup group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8");
+		TweetGroup group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8", ZoneId.of("Europe/Berlin"));
 		Assert.assertEquals(group.tweets.size(), 18);
 		for (Tweet tweet : group.tweets) {
 			System.out.println(tweet.tweetDate);
@@ -123,7 +124,7 @@ public class TweetCreationWorkflow {
 	public void repeatGroupForYearsTest() throws MalformedTSVFileException{
 		File file = new File("src/test/resources/testTSVFile_DateFormats.txt");
 		TweetFactory factory = new TweetFactory("src/main/resources/parser/datetime.formats");
-		TweetGroup group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8");
+		TweetGroup group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8", ZoneId.of("Europe/Berlin"));
 		TweetGroup oneYearLater = DBConnector.createRepeatGroupInYears(group, 2, 2);
 		System.out.println(oneYearLater.title);
 		Assert.assertEquals(group.description, oneYearLater.description);
@@ -153,7 +154,7 @@ public class TweetCreationWorkflow {
 	public void repeatGroupForSecondsTest() throws MalformedTSVFileException{
 		File file = new File("src/test/resources/testTSVFile_DateFormats.txt");
 		TweetFactory factory = new TweetFactory("src/main/resources/parser/datetime.formats");
-		TweetGroup group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8");
+		TweetGroup group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8", ZoneId.of("Europe/Berlin"));
 		TweetGroup oneYearLater = DBConnector.createRepeatGroupInSeconds(group, 2, 2000, "newTitle");
 		System.out.println(oneYearLater.title);
 		Assert.assertEquals(group.description, oneYearLater.description);

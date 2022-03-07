@@ -274,7 +274,7 @@ public class GroupController {
      */
     @RequestMapping(value = "/import/gdrive", method = RequestMethod.POST)
     public ModelAndView importGdriveGroupPost(@RequestParam("source") String source,
-                                              @RequestParam("title") String title, @RequestParam("description") String description, @RequestParam("encoding") String encoding, @RequestParam(name = "delay", defaultValue = "0") int delay) throws Exception {
+                                              @RequestParam("title") String title, @RequestParam("description") String description, @RequestParam("encoding") String encoding, @RequestParam(name = "delay", defaultValue = "0") int delay, ZoneId clientZoneId) throws Exception {
         if (session.getAttribute("account") == null)
             return new ModelAndView("redirect:/account");
         int userID = Integer.parseInt(((Hashtable<String, String>) session.getAttribute("account")).get("userID"));
@@ -331,7 +331,7 @@ public class GroupController {
         }
 
         try {
-            tweetGroup = tweeter.getTweetsFromTSVFile(file, title, description, (delay <= 0) ? 0 : delay, encoding);
+            tweetGroup = tweeter.getTweetsFromTSVFile(file, title, description, (delay <= 0) ? 0 : delay, encoding, clientZoneId);
         } catch (MalformedTSVFileException e) {
             ModelAndView mv = new ModelAndView("error");
             mv.addObject("error", "Parsing error, " + e.getMessage());
@@ -385,7 +385,7 @@ public class GroupController {
     @RequestMapping(value = "/import/tsv-file", method = RequestMethod.POST)
     public ModelAndView importTSVGroupPost(@RequestParam("source") MultipartFile source,
                                            @RequestParam("encoding") String encoding, @RequestParam("title") String title,
-                                           @RequestParam("description") String description, @RequestParam(name = "delay", defaultValue = "0") int delay)
+                                           @RequestParam("description") String description, @RequestParam(name = "delay", defaultValue = "0") int delay, ZoneId clientZoneId)
             throws MalformedTSVFileException {
         if (session.getAttribute("account") == null)
             return new ModelAndView("redirect:/account");
@@ -419,7 +419,7 @@ public class GroupController {
         }
 
         try {
-            tweetGroup = tweeter.getTweetsFromTSVFile(file, title, description, (delay <= 0) ? 0 : delay, encoding);
+            tweetGroup = tweeter.getTweetsFromTSVFile(file, title, description, (delay <= 0) ? 0 : delay, encoding, clientZoneId);
         } catch (MalformedTSVFileException e) {
             ModelAndView mv = new ModelAndView("error");
             mv.addObject("error", "Parsing error, " + e.getMessage());
