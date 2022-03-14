@@ -51,7 +51,6 @@ public class TzExampleController {
               @RequestParam("requestedUrl") String requestedUrl,
               @RequestParam("timeZoneOffset") int timeZoneOffset) {
 
-
         ZoneOffset zoneOffset =
                   ZoneOffset.ofTotalSeconds(-timeZoneOffset * 60);
 
