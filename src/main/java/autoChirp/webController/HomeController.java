@@ -21,7 +21,7 @@ public class HomeController {
 	/**
 	 * A HTTP GET request handler, responsible for redirecting / to /home.
 	 *
-	 * @return Redirection to /home
+	 * @return Redirection to /tzHandler, that will redirect to /home after obtaining client's time zone information
 	 */
 	@RequestMapping(value = "/")
 	public String index() {

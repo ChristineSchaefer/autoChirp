@@ -17,9 +17,20 @@ import java.time.ZoneOffset;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * a class to manage handlers used for processing the client's time zone
+ * based on: https://www.logicbig.com/tutorials/spring-framework/spring-web-mvc/client-time-zone.html
+ *
+ * @author Ricarda Boente
+ */
+
 @Controller
 public class TzExampleController {
-   
+
+    /**
+     * method for testing purposes only, not used at the moment
+     * @return redirect to a page showing obtained time zone information
+     */
     @RequestMapping("/tz")
     @ResponseBody
     public String testHandler (Locale clientLocale, ZoneId clientZoneId) {
@@ -37,13 +48,18 @@ public class TzExampleController {
                              clientLocale);
     }
 
-    
+    /**
+     * @return redirect to tzPage that will obtain information in hidden input field and call /tzValueHandler
+     */
     @RequestMapping("/tzHandler")
     public String handle () {
-        return "tzJsPage";
+        return "tzPage";
     }
-    
 
+    /**
+     * processes time zone information from client
+     * @return redirect to requested URL, /home in this case
+     */
     @RequestMapping(value = "/tzValueHandler", method = RequestMethod.POST)
     public String handleTzValue (
               Locale locale, HttpServletRequest req,

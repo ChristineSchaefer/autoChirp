@@ -59,6 +59,7 @@ public class TweetController {
 		this.session = session;
 	}
 
+	//TODO: tweet dates here should be displayed in client time zone
 	/**
 	 * A HTTP GET request handler, responsible for serving /tweets/view. This
 	 * method provides the returned view with all necessary Tweets from the
@@ -454,6 +455,8 @@ public class TweetController {
 	 *            POST param bearing the referenced input-field value
 	 * @param longitude
 	 *            POST param bearing the referenced input-field value
+	 * @param clientZoneId
+	 *            time zone obtained from the client used for date calculations
 	 * @return Redirect-view if successful, else error-view
 	 */
 	@RequestMapping(value = "/edit/{tweetID}", method = RequestMethod.POST)

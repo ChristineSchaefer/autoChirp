@@ -1,7 +1,7 @@
 package autoChirp;
 
 import autoChirp.tweetCreation.TweetGroup;
-import autoChirp.tweeting.AcceptHeaderLocaleTzCompositeResolver;
+import autoChirp.timezoneExtraction.AcceptHeaderLocaleTzCompositeResolver;
 import autoChirp.tweeting.TweetScheduler;
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 
-import autoChirp.tweeting.TzRedirectInterceptor;
+import autoChirp.timezoneExtraction.TzRedirectInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -68,6 +68,9 @@ public class Application extends SpringBootServletInitializer {
 		return application.sources(applicationClass);
 	}
 
+	/**
+	 * @return AcceptHeaderLocaleTzCompositeResolver, used to process client time zone
+     */
 	@Bean
 	LocaleContextResolver localeResolver () {
 		SessionLocaleResolver l = new SessionLocaleResolver();
@@ -76,7 +79,9 @@ public class Application extends SpringBootServletInitializer {
 		return r;
 	}
 
-	//TODO: improve way of checking tz
+	/**
+	 * uses custom interceptor for obtaining and processing the client's time zone
+     */
 	@Bean
 	public WebMvcConfigurer configurer () {
 		return new WebMvcConfigurerAdapter() {
@@ -84,7 +89,6 @@ public class Application extends SpringBootServletInitializer {
 			public void addInterceptors (InterceptorRegistry registry) {
 				TzRedirectInterceptor interceptor = new TzRedirectInterceptor();
 				InterceptorRegistration i = registry.addInterceptor(interceptor);
-				//TODO: replace tzHandler?
 				i.excludePathPatterns("/tzHandler", "/tzValueHandler");
 			}
 		};

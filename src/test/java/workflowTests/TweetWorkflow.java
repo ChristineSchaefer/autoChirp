@@ -5,28 +5,17 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.junit.Assert;
 import autoChirp.DBConnector;
 import autoChirp.tweetCreation.Tweet;
 import autoChirp.tweetCreation.TweetGroup;
 import autoChirp.tweeting.TweetScheduler;
-
-
-//TODO: test time changes, maybe mock localdatetime.now like this:
-//try(MockedStatic<LocalDateTime> mock = Mockito.mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
-//doReturn(LocalDateTime.of(2030,01,01,22,22,22)).when(mock).now();
-		// Put the execution of the test inside of the try, otherwise it won't work
-		//}
 
 
 /**
@@ -52,7 +41,7 @@ public class TweetWorkflow {
 	/**
 	 * connect to database and create output-tables database
 	 */
-	/*@BeforeClass
+	@BeforeClass
 	public static void dbConnection() {
 		DBConnector.connect(dbPath + dbFileName);
 		DBConnector.createOutputTables(dbCreationFileName);
@@ -73,15 +62,22 @@ public class TweetWorkflow {
 			}
 			in.close();
 		} catch (IOException e) {
-			System.out.println("twitter_secrets.txt is missing");
+			System.out.println("twitter_secretes.txt is missing");
 			System.exit(0);
 		}
-	}*/
+	}
 
 	/**
 	 * schedule a TweetGroup
 	 */
-	//TODO: rewrite/rework test so that it's working & maybe write extra test for DST check
+	//TODO: maybe rewrite/rework test so that it's working also with different time zones
+	//TODO: maybe mock localdatetime.now like this:
+    //try(MockedStatic<LocalDateTime> mock = Mockito.mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
+    //doReturn(LocalDateTime.of(2030,01,01,22,22,22)).when(mock).now();
+	// Put the execution of the test inside of the try, otherwise it won't work
+	//}
+
+
 	@Test
 	public  void scheduleTweetsForUser() {
 		// insert new user
@@ -117,29 +113,6 @@ public class TweetWorkflow {
 				stop = true;
 			}
 		}
-	}
-
-	@Test
-	public void timeTest() {
-//		LocalDateTime localDateTimeBeforeDST = LocalDateTime
-//				.of(2022, 3, 27, 1, 55);
-//		LocalDateTime localDateTimeAfterDST = LocalDateTime.of(2022, 3, 27, 3, 10);
-		LocalDateTime localDateTimeBeforeDST = LocalDateTime
-				.of(2022, 10, 30, 2, 55);
-		LocalDateTime localDateTimeAfterDST = LocalDateTime.of(2022, 10, 30, 3, 05);
-
-		ZoneId zoneId = ZoneId.of("Europe/Berlin");
-		ZonedDateTime zonedDateTimeBeforeDST = localDateTimeBeforeDST.atZone(zoneId);
-		Assert.assertEquals(zonedDateTimeBeforeDST.toString(), "2022-10-30T02:55+02:00[Europe/Berlin]");
-		ZonedDateTime zonedDateTimeInDST = zonedDateTimeBeforeDST.plus(10, ChronoUnit.MINUTES);
-		Assert.assertEquals(zonedDateTimeInDST.toString(), "2022-10-30T02:05+01:00[Europe/Berlin]");
-		ZonedDateTime zonedDateTimeAfterDST = localDateTimeAfterDST.atZone(zoneId);
-		Assert.assertEquals(zonedDateTimeAfterDST.toString(), "2022-10-30T03:05+01:00[Europe/Berlin]");
-		Assert.assertEquals(ChronoUnit.MINUTES.between(zonedDateTimeBeforeDST, zonedDateTimeAfterDST), 70);
-		ZonedDateTime utcDateTimeBeforeDST = zonedDateTimeBeforeDST.withZoneSameInstant(ZoneId.of("UTC"));
-		ZonedDateTime utcDateTimeAfterDST = zonedDateTimeAfterDST.withZoneSameInstant(ZoneId.of("UTC"));
-		System.out.println(utcDateTimeAfterDST.toString());
-		Assert.assertEquals(ChronoUnit.MINUTES.between(utcDateTimeBeforeDST, utcDateTimeAfterDST), 70);
 	}
 }
 

@@ -225,6 +225,10 @@ public class DBConnector {
 		return toReturn;
 	}
 
+
+	//TODO: in order to make time zone extraction sensible, tweet dates should either be stored in one consistent time zone
+	// or time zone information should be stored in extra field
+
 	/**
 	 * writes a TweetGroup into the database and returns its new groupID.
 	 * updates the tables 'groups' and 'tweets'.

@@ -29,7 +29,7 @@ public class TweetScheduler {
   private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
 
 	/**
-	 * Schedules a list of tweets for the given twitter-user by creating a new
+	 * Schedules a list of tweets in the Berlin time zone for the given twitter-user by creating a new
 	 * TwitterTask for each tweet. Also updates the tweets status in the
 	 * database to scheduled = true
 	 *
@@ -40,7 +40,6 @@ public class TweetScheduler {
 	 */
 	public static void scheduleTweetsForUser(List<Tweet> tweets, int user_id) {
 		ZoneId zoneId = ZoneId.of("Europe/Berlin");
-		System.out.println("lala");
 		LocalDateTime now;
 		long delay;
 
@@ -76,7 +75,8 @@ public class TweetScheduler {
 	/**
 	 * Schedules a list of tweets for the given twitter-user by creating a new
 	 * TwitterTask for each tweet. Also updates the tweets status in the
-	 * database to scheduled = true
+	 * database to scheduled = true. All dates from client and server are transferred into UTC-time zone to allow for
+	 * correct calculations even across time zones
 	 *
 	 * @param tweets
 	 *            a list of tweets to schedule

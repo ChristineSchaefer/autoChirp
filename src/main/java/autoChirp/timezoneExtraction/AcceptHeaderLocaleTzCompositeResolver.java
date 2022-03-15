@@ -1,4 +1,4 @@
-package autoChirp.tweeting;
+package autoChirp.timezoneExtraction;
 
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.web.servlet.LocaleContextResolver;
@@ -8,6 +8,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Locale;
 
+/**
+ * A custom LocaleContextResolver implementation going to delegate Locale responsibilities to AcceptHeaderLocaleResolver
+ * and time zone responsibility to one of the Spring's implementation of LocaleContextResolver:,
+ * based on https://www.logicbig.com/tutorials/spring-framework/spring-web-mvc/client-time-zone.html
+ *
+ * @author Ricarda Boente
+ *
+ */
+
 public class AcceptHeaderLocaleTzCompositeResolver implements LocaleContextResolver {
     private LocaleContextResolver localeContextResolver;
     private AcceptHeaderLocaleResolver acceptHeaderLocaleResolver;
@@ -15,7 +24,6 @@ public class AcceptHeaderLocaleTzCompositeResolver implements LocaleContextResol
     public AcceptHeaderLocaleTzCompositeResolver (LocaleContextResolver localeContextResolver) {
         this.localeContextResolver = localeContextResolver;
         acceptHeaderLocaleResolver = new AcceptHeaderLocaleResolver();
-//        acceptHeaderLocaleResolver.setDefaultLocale(Locale.getDefault());
     }
 
     @Override

@@ -77,6 +77,7 @@ public class GroupController {
         this.session = session;
     }
 
+    //TODO: tweet dates here should be displayed in client time zone
     /**
      * A HTTP GET request handler, responsible for serving /groups/view. This
      * method provides the returned view with all groups, read from the
@@ -269,6 +270,7 @@ public class GroupController {
      * @param source      POST param bearing the Wikipedia-article URL
      * @param title       POST param bearing the referenced input-field value
      * @param description POST param bearing the referenced input-field value
+     * @param clientZoneId time zone obtained from the client used for date calculations
      * @return Redirect-view if successful, else error-view
      * @throws Exception
      */
@@ -379,6 +381,7 @@ public class GroupController {
      * @param title       POST param bearing the referenced input-field value
      * @param description POST param bearing the referenced input-field value
      * @param delay       POST param bearing the referenced input-field value
+     * @param clientZoneId time zone obtained from the client used for date calculations
      * @return Redirect-view if successful, else error-view
      * @throws MalformedTSVFileException
      */
@@ -747,6 +750,7 @@ public class GroupController {
      * Tweets in the (now enabled) group.
      *
      * @param groupID Path param containing an ID-reference to a group
+     * @param clientZoneId time zone obtained from the client used for date calculations
      * @return Redirect-view to the toggled group overview
      */
     @RequestMapping(value = "/toggle/{groupID}")

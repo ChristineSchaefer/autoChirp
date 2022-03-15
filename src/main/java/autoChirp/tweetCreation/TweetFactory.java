@@ -50,14 +50,14 @@ public class TweetFactory {
 	private List<String> dateFormats = new ArrayList<String>();
 	// a formatter to normalize the different input formats
 	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
+    // the time zone used by the server
 	private ZoneId serverZoneId = ZoneOffset.ofTotalSeconds(
 			TimeZone.getDefault().getRawOffset() / 1000);
 	/**
-	 * sets the current year and reads the accepted formats for date-inputs from dateTimeFormats.txt
+	 * sets the current year in UTC time and reads the accepted formats for date-inputs from dateTimeFormats.txt
 	 */
 	public TweetFactory(String dateFormatsPath) {
-		currentYear = LocalDateTime.now().atZone(serverZoneId).withZoneSameInstant(ZoneId.of("UTC")).getYear();
+		currentYear = ZonedDateTime.now(serverZoneId).withZoneSameInstant(ZoneId.of("UTC")).getYear();
 		this.dateFormatsFile = new File(dateFormatsPath);
 		readDateFormatsFromFile();
 	}
@@ -115,7 +115,7 @@ public class TweetFactory {
 
 	/**
 	 * creates a TweetGroup-object from a tsv-file by building a tweet for each
-	 * row, which has the following format: [date] tab [time(optional)]
+	 * row, which has the following format: [date, meant in client's time zone] tab [time(optional)]
 	 * tab [tweet-content] tab [imageUrl (optional)] tab [latitude (optional)]
 	 * tab [longitude (optional)]
 	 *
@@ -134,7 +134,6 @@ public class TweetFactory {
 		TweetGroup group = new TweetGroup(title, description);
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tsvFile), encoding));
-			System.out.println("clientZoneId: " + clientZoneId);
 			ZoneId utcZoneId = ZoneId.of("UTC");
 			String line = in.readLine();
 			String content;
@@ -250,9 +249,9 @@ public class TweetFactory {
 				//refactor ldt to zdt (UTC)
 				zdt = ldt.atZone(clientZoneId).withZoneSameInstant(utcZoneId);
 
-				// calculate differences in UTC
+				// add year according to delay if given date is before now (calculated in UTC)
 				if (delay == 0) {
-					while (zdt.isBefore(LocalDateTime.now().atZone(serverZoneId).withZoneSameInstant(utcZoneId))) {
+					while (zdt.isBefore(ZonedDateTime.now(serverZoneId).withZoneSameInstant(utcZoneId))) {
 						ldt = ldt.plusYears(1);
 					}
 				}
@@ -269,7 +268,7 @@ public class TweetFactory {
 				//if ldt has changed, correct zdt
 				zdt = ldt.atZone(clientZoneId).withZoneSameInstant(utcZoneId);
 
-				if (zdt.isAfter(LocalDateTime.now().atZone(serverZoneId).withZoneSameInstant(utcZoneId))) {
+				if (zdt.isAfter(ZonedDateTime.now(serverZoneId).withZoneSameInstant(utcZoneId))) {
 					tweet = new Tweet(formattedDate, content, imageUrl, longitude, latitude);
 					group.addTweet(tweet);
 				}
@@ -346,7 +345,7 @@ public class TweetFactory {
 				tweets.add(tweet);
 			}
 		}
-		currentYear = LocalDateTime.now().atZone(serverZoneId).withZoneSameInstant(ZoneId.of("UTC")).getYear();
+		currentYear = ZonedDateTime.now(serverZoneId).withZoneSameInstant(ZoneId.of("UTC")).getYear();
 		TweetGroup group = new TweetGroup(doc.getTitle(), description);
 		group.setTweets(tweets);
 		return group;
@@ -436,6 +435,7 @@ public class TweetFactory {
 //		return trimToTweet(toTrim, url);
 //	}
 
+	//TODO: next three date helper methods could optionally be refactored to use ZonedDateTime from scratch
 	/**
 	 * extract date-strings from a TimeML annotated sentence. Extracts only dates
 	 * with at least a year and month.
