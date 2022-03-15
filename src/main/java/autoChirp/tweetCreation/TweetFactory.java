@@ -8,9 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,12 +48,13 @@ public class TweetFactory {
 	private List<String> dateFormats = new ArrayList<String>();
 	// a formatter to normalize the different input formats
 	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
+    // the time zone used for the whole application
+	private ZoneId berlinTimeZone = ZoneId.of("Europe/Berlin");
 	/**
 	 * sets the current year and reads the accepted formats for date-inputs from dateTimeFormats.txt
 	 */
 	public TweetFactory(String dateFormatsPath) {
-		currentYear = LocalDateTime.now().getYear();
+		currentYear = ZonedDateTime.now(berlinTimeZone).getYear();
 		this.dateFormatsFile = new File(dateFormatsPath);
 		readDateFormatsFromFile();
 	}
@@ -113,7 +112,7 @@ public class TweetFactory {
 
 	/**
 	 * creates a TweetGroup-object from a tsv-file by building a tweet for each
-	 * row, which has the following format: [date] tab [time(optional)]
+	 * row, which has the following format: [date, should be meant in timezone of Berlin] tab [time(optional)]
 	 * tab [tweet-content] tab [imageUrl (optional)] tab [latitude (optional)]
 	 * tab [longitude (optional)]
 	 *
@@ -137,9 +136,9 @@ public class TweetFactory {
 			String date;
 			String time;
 			int delayInSeconds = -1;
-			LocalDateTime lastLDT = null;
+			ZonedDateTime lastZDT = null;
 			boolean useDelay = false;
-			LocalDateTime ldt;
+			ZonedDateTime zdt;
 			Tweet tweet;
 			int row = 1;
 			while (line != null) {
@@ -167,13 +166,13 @@ public class TweetFactory {
 				time = split[1].trim();
 				if(!useDelay){
 					if (time.equals("")) {
-						ldt = parseDateString(date);
-						if(ldt == null){
+						zdt = parseDateString(date).atZone(berlinTimeZone);
+						if(zdt == null){
 							throw new MalformedTSVFileException(row, 1, date, "malformed date: "+origDate+"  (row: "+row+" column: 1)");
 						}
 					} else {
-						ldt = parseDateString(date + " " + time);
-						if(ldt == null){
+						zdt = parseDateString(date + " " + time).atZone(berlinTimeZone);
+						if(zdt == null){
 							throw new MalformedTSVFileException(row, 1, date + " " + time, "malformed date or time: "+date + " " + time+"  (row: "+row+" column: 1-2)");
 						}
 					}
@@ -190,7 +189,7 @@ public class TweetFactory {
 						}
 					
 					
-					ldt = lastLDT.plusSeconds(delayInSeconds);
+					zdt = lastZDT.plusSeconds(delayInSeconds);
 				}
 
 				// get tweet-image
@@ -240,16 +239,15 @@ public class TweetFactory {
 				content = StringEscapeUtils.unescapeJava(content);
 
 				// add delay
-				ldt = ldt.plusYears(delay);
-
+				zdt = zdt.plusYears(delay);
 
 				if (delay == 0) {
-					while (ldt.isBefore(LocalDateTime.now())) {
-						ldt = ldt.plusYears(1);
+					while (zdt.isBefore(ZonedDateTime.now(berlinTimeZone))) {
+						zdt = zdt.plusYears(1);
 					}
 				}
 				// normalize date to the format yyyy-MM-dd HH:mm
-				String formattedDate = ldt.format(formatter);
+				String formattedDate = zdt.format(formatter);
 				// set default time to 12:00
 				boolean midnight = false;
 				if (time.contains(" 00:00")) {
@@ -258,13 +256,13 @@ public class TweetFactory {
 				if (!midnight) {
 					formattedDate = formattedDate.replace(" 00:00", " 12:00");
 				}
-				if (ldt.isAfter(LocalDateTime.now())) {
+				if (zdt.isAfter(ZonedDateTime.now(berlinTimeZone))) {
 					tweet = new Tweet(formattedDate, content, imageUrl, longitude, latitude);
 					group.addTweet(tweet);
 				}
 				line = in.readLine();
 				row++;
-				lastLDT = ldt;
+				lastZDT = zdt;
 			}
 			in.close();
 		} catch (IOException e) {
@@ -335,7 +333,7 @@ public class TweetFactory {
 				tweets.add(tweet);
 			}
 		}
-		currentYear = LocalDateTime.now().getYear();
+		currentYear = ZonedDateTime.now(berlinTimeZone).getYear();
 		TweetGroup group = new TweetGroup(doc.getTitle(), description);
 		group.setTweets(tweets);
 		return group;
