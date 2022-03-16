@@ -476,18 +476,18 @@ public class TweetFactory {
 		if (pastDate.length() == 7) {
 			pastDate = pastDate.concat("-01");
 		}
-		LocalDateTime ldtOriginal = parseDateString(pastDate);
-		if (ldtOriginal == null)
+		ZonedDateTime zdtOriginal = parseDateString(pastDate).atZone(berlinTimeZone);
+		if (zdtOriginal == null)
 			return null;
 		// find next anniverary in the future
-		LocalDateTime ldt = LocalDateTime.of(currentYear, ldtOriginal.getMonth(), ldtOriginal.getDayOfMonth(),
-				ldtOriginal.getHour(), ldtOriginal.getMinute());
-		LocalDateTime today = LocalDateTime.now();
-		if (ldt.isBefore(today)) {
-			ldt = ldt.plusYears(1);
+		ZonedDateTime zdt = LocalDateTime.of(currentYear, zdtOriginal.getMonth(), zdtOriginal.getDayOfMonth(),
+				zdtOriginal.getHour(), zdtOriginal.getMinute()).atZone(berlinTimeZone);
+		ZonedDateTime today = ZonedDateTime.now(berlinTimeZone);
+		if (zdt.isBefore(today)) {
+			zdt = zdt.plusYears(1);
 		}
 		// normalize date to the format YYYY-MM-dd HH:mm
-		String formattedDate = ldt.format(formatter);
+		String formattedDate = zdt.format(formatter);
 		if (!midnight) {
 			formattedDate = formattedDate.replace(" 00:00", " 12:00");
 		}
