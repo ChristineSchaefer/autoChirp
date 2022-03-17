@@ -44,7 +44,9 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="tweetDate" class="col-sm-2 control-label">Scheduling</label>
+              <label for="tweetDate" class="col-sm-2 control-label">Scheduling
+                <div id="tweetsize" class="small text-muted">(time zone: Europe/Berlin)</div>
+              </label>
               <div class="col-sm-5">
                 <input type="date" class="form-control" id="tweetDate" name="tweetDate" required="required" placeholder="YYYY-MM-DD (e.g. 2021-08-17)"
                   th:value="${#httpServletRequest.requestURI.startsWith(#httpServletRequest.getContextPath() + '/tweets/add')} ? '' : ${#strings.substring(tweetEntry.tweetDate, 0, 10)}"

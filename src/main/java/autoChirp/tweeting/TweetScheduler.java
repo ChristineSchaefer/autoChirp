@@ -2,7 +2,10 @@ package autoChirp.tweeting;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +31,7 @@ public class TweetScheduler {
   private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
 
 	/**
-	 * Schedules a list of tweets for the given twitter-user by creating a new
+	 * Schedules a list of tweets for the given twitter-user according to Berlin timezone by creating a new
 	 * TwitterTask for each tweet. Also updates the tweets status in the
 	 * database to scheduled = true
 	 *
@@ -38,8 +41,7 @@ public class TweetScheduler {
 	 *            id of the associated user
 	 */
 	public static void scheduleTweetsForUser(List<Tweet> tweets, int user_id) {
-		LocalDateTime now;
-		Duration d;
+		ZoneId zoneId = ZoneId.of("Europe/Berlin");
 		long delay;
 
 		for (Tweet tweet: tweets) {
@@ -52,10 +54,11 @@ public class TweetScheduler {
 			// create DateTime-Object from date-string
 			LocalDateTime ldt = LocalDateTime.parse(tweet.tweetDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-			// calculate delay in seconds
-			now = LocalDateTime.now();
-			d = Duration.between(now, ldt);
-			delay = d.getSeconds();
+			// calculate delay in seconds, including time changes due to DST
+			ZonedDateTime znow = ZonedDateTime.now(zoneId);
+			ZonedDateTime zdt = ldt.atZone(zoneId);
+			delay = ChronoUnit.SECONDS.between(znow, zdt);
+			System.out.println("Delay: " + delay);
 
 
       //tweet-time is in the past
