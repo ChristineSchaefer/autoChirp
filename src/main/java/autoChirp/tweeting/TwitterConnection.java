@@ -134,9 +134,6 @@ public class TwitterConnection {
 		
 	
 
-		// update Tweet-Status in DB
-		DBConnector.flagAsTweeted(tweetID, userID);
-
 		// update Status
 		org.springframework.social.twitter.api.Tweet statusUpdate = null;
 		if(replyID > 0){
@@ -156,6 +153,11 @@ public class TwitterConnection {
 				e.printStackTrace();
 			}
 			DBConnector.addStatusID(tweetID, statusUpdate.getId());
+		}
+
+		// update Tweet-Status in DB only if tweet could be posted
+		if(statusUpdate != null){
+			DBConnector.flagAsTweeted(tweetID, userID);
 		}
 
 	}

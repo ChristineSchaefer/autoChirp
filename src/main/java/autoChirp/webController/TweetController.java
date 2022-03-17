@@ -622,27 +622,37 @@ public class TweetController {
 	/**
 	 * A helper function for editing and adding new tweets.
 	 * Tests if image-url is valid and returning an image, else returns exception
+	 * @param imageUrl: the URL referring to an image that should be tweeted
+	 * @return a site with an error message, if the image could not be retrieved, else null.
+	 *
 	 */
 	private ModelAndView imageUrlErrorHandling(String imageUrl){
 		try{
-			final URL url = new URL(imageUrl);
+			// Code Block that could make more images uploadable (example: https://texperimentales.hypotheses.org/files/2021/12/FFucJwNXsAU5oAo.jpeg).
+			// But also leads to false positives: images that cannot be tweeted after all and fail at a later point without a proper error message!
+
+			/*final URL url = new URL(imageUrl);
 			final HttpURLConnection connection = (HttpURLConnection) url
 					.openConnection();
 			connection.setRequestProperty(
 					"User-Agent",
 					"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31");
-			if(ImageIO.read(connection.getInputStream()) == null){
-				ModelAndView mv = new ModelAndView("error");
-				mv.addObject("error", "Sorry, but the selected image cannot be found at the given URL.");
-				return mv;
-			}
+			if(ImageIO.read(connection.getInputStream()) == null){*/
+
+			if(ImageIO.read(new URL(imageUrl)) == null){
+				// checks if failing could be caused by incorrect image format
+				if (!(imageUrl.endsWith(".jpg") || imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".png") || imageUrl.endsWith(".gif") || imageUrl.endsWith(".webp"))) {
+					ModelAndView mv = new ModelAndView("error");
+					mv.addObject("error", "The selected image has an unsupported format. Supported formats: PNG, JPG, JPEG, GIF, WEBP.");
+					return mv;
+				}
+					ModelAndView mv = new ModelAndView("error");
+					mv.addObject("error", "The selected image cannot be found at the given URL.");
+					return mv;
+				}
 		} catch(Exception e) {
 			ModelAndView mv = new ModelAndView("error");
-			if (!imageUrl.endsWith(".jpg") || !imageUrl.endsWith(".png") || !imageUrl.endsWith(".gif") || !imageUrl.endsWith(".webp")) {
-				mv.addObject("error", "Sorry, but the selected image has an unsupported format. Supported formats: PNG, JPG, GIF, WEBP.");
-			} else {
-				mv.addObject("error", "The image URL must be a valid url. Please check the given path.");
-			}
+			mv.addObject("error", "The image URL must be a valid url and the url's server must allow the usage from outside applications. Please check the given path or choose a different url.");
 			return mv;
 		}
 		return null;
