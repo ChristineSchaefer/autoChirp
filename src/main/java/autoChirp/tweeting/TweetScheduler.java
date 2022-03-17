@@ -58,7 +58,6 @@ public class TweetScheduler {
 			ZonedDateTime znow = ZonedDateTime.now(zoneId);
 			ZonedDateTime zdt = ldt.atZone(zoneId);
 			delay = ChronoUnit.SECONDS.between(znow, zdt);
-			System.out.println("Delay: " + delay);
 
 
       //tweet-time is in the past
