@@ -27,6 +27,9 @@ import de.unihd.dbs.heideltime.standalone.DocumentType;
 import de.unihd.dbs.heideltime.standalone.OutputType;
 import de.unihd.dbs.heideltime.standalone.POSTagger;
 import de.unihd.dbs.heideltime.standalone.exceptions.DocumentCreationTimeMissingException;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.imageio.ImageIO;
 
 /**
  * A class to generate tweets and tweetGroups from different input-types (tsv-files or urls)
@@ -198,7 +201,12 @@ public class TweetFactory {
 					imageUrl = split[3];
 					if(imageUrl.length() > 0){
 						try {
-							Resource image = new UrlResource(imageUrl);
+							if(ImageIO.read(new URL(imageUrl)) == null){
+								if (!(imageUrl.endsWith(".jpg") || imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".png") || imageUrl.endsWith(".gif") || imageUrl.endsWith(".webp"))) {
+									throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url, wrong format, please use jpg, jpeg, gif, png or webp: "+imageUrl+" (row: "+row+" column: 4)");
+								}
+								throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 4)");
+							}
 						} catch (Exception e) {
 							throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 4)");
 						}
