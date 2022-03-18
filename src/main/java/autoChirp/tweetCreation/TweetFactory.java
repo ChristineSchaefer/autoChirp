@@ -231,9 +231,9 @@ public class TweetFactory {
 						try {
 							if(ImageIO.read(new URL(imageUrl)) == null){
 								if (!(imageUrl.endsWith(".jpg") || imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".png") || imageUrl.endsWith(".gif") || imageUrl.endsWith(".webp"))) {
-									throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url, wrong format, please use jpg, jpeg, gif, png or webp: "+imageUrl+" (row: "+row+" column: 4)");
+									throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url, wrong format, please use jpg, jpeg, gif, png or webp: "+imageUrl+" (row: "+row+" column: 5)");
 								}
-								throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 4)");
+								throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 5)");
 							}
 						} catch (Exception e) {
 							throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 5)");
