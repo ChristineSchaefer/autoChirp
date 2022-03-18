@@ -33,7 +33,6 @@ import org.springframework.context.annotation.Configuration;
  * @editor Laura Pascale Berg
  */
 @Configuration
-@EnableAutoConfiguration
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {
 

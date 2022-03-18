@@ -13,3 +13,14 @@
  
  #### Employed technologies
  This application is build upon the Spring MVC framework (with its Spring Social Twitter module) and uses Thymeleaf as templating-engine while custom styles are written in SASS. Behind the scenes Heideltime and the TreeTagger dig through Wikipedia-articles to find parsable dates and extract those. The fully documented source code of this application can be obtained from our public GitHub repository.
+
+ #### Updates
+ In march 2022, three other developers worked on the application and implemented the following upgrades.
+
+ ##### Database update
+
+ ##### Short threads
+
+ ##### Image errors
+
+ ##### Automatized switches to/from daylight-saving-time

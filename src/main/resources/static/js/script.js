@@ -66,4 +66,3 @@ if ($('textarea#content').length > 0) {
 	calculate();
 	$('textarea#content').on('input propertychange', function() { calculate(); });
 }
-

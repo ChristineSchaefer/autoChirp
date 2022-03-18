@@ -912,7 +912,7 @@ public class DBConnector {
 
 	/**
 	 * sets the statusID of a published tweet 
-	 * @param tweet
+	 * @param tweetID
 	 * @param statusId
 	 */
 	public static void addStatusID(int tweetID, long statusId){

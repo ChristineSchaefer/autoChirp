@@ -8,12 +8,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +29,9 @@ import de.unihd.dbs.heideltime.standalone.DocumentType;
 import de.unihd.dbs.heideltime.standalone.OutputType;
 import de.unihd.dbs.heideltime.standalone.POSTagger;
 import de.unihd.dbs.heideltime.standalone.exceptions.DocumentCreationTimeMissingException;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.imageio.ImageIO;
 
 /**
  * A class to generate tweets and tweetGroups from different input-types (tsv-files or urls)
@@ -50,12 +53,13 @@ public class TweetFactory {
 	private List<String> dateFormats = new ArrayList<String>();
 	// a formatter to normalize the different input formats
 	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
+    // the time zone used for the whole application
+	private ZoneId berlinTimeZone = ZoneId.of("Europe/Berlin");
 	/**
 	 * sets the current year and reads the accepted formats for date-inputs from dateTimeFormats.txt
 	 */
 	public TweetFactory(String dateFormatsPath) {
-		currentYear = LocalDateTime.now().getYear();
+		currentYear = ZonedDateTime.now(berlinTimeZone).getYear();
 		this.dateFormatsFile = new File(dateFormatsPath);
 		readDateFormatsFromFile();
 	}
@@ -113,7 +117,7 @@ public class TweetFactory {
 
 	/**
 	 * creates a TweetGroup-object from a tsv-file by building a tweet for each
-	 * row, which has the following format: [date] tab [time(optional)]
+	 * row, which has the following format: [date, should be meant in timezone of Berlin] tab [time(optional)]
 	 * tab [tweet-content] tab [imageUrl (optional)] tab [latitude (optional)]
 	 * tab [longitude (optional)]
 	 *
@@ -126,10 +130,10 @@ public class TweetFactory {
 	 * @param delay
 	 *            - the number of years between the written date in the file and
 	 *            the calculated tweet-date
-	 * @return a new tweetGroup with a tweet for each row in the file
+	 * @return a list of tweetGroups with a tweet for each row in the file
 	 */
-	public TweetGroup getTweetsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding) throws MalformedTSVFileException {
-		TweetGroup group = new TweetGroup(title, description);
+	public List<TweetGroup> getTweetsFromTSVFile(File tsvFile, String title, String description, int delay, String encoding) throws MalformedTSVFileException {
+		List<TweetGroup> toReturn = new ArrayList<>();
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tsvFile), encoding));
 			String line = in.readLine();
@@ -137,11 +141,16 @@ public class TweetFactory {
 			String date;
 			String time;
 			int delayInSeconds = -1;
-			LocalDateTime lastLDT = null;
+			ZonedDateTime lastZDT = null;
 			boolean useDelay = false;
-			LocalDateTime ldt;
+			ZonedDateTime zdt;
 			Tweet tweet;
 			int row = 1;
+			// map with thread-name as key and tweetgroup as value to save all groups from imported table
+			Map<String, TweetGroup> threadGroups = new HashMap<>();
+			// default group = group name and description from user input
+			TweetGroup group = new TweetGroup(title, description);
+			threadGroups.put("default", group);
 			while (line != null) {
 				if(line.equals("")){
 					line = in.readLine();
@@ -167,13 +176,13 @@ public class TweetFactory {
 				time = split[1].trim();
 				if(!useDelay){
 					if (time.equals("")) {
-						ldt = parseDateString(date);
-						if(ldt == null){
+						zdt = parseDateString(date).atZone(berlinTimeZone);
+						if(zdt == null){
 							throw new MalformedTSVFileException(row, 1, date, "malformed date: "+origDate+"  (row: "+row+" column: 1)");
 						}
 					} else {
-						ldt = parseDateString(date + " " + time);
-						if(ldt == null){
+						zdt = parseDateString(date + " " + time).atZone(berlinTimeZone);
+						if(zdt == null){
 							throw new MalformedTSVFileException(row, 1, date + " " + time, "malformed date or time: "+date + " " + time+"  (row: "+row+" column: 1-2)");
 						}
 					}
@@ -190,42 +199,68 @@ public class TweetFactory {
 						}
 					
 					
-					ldt = lastLDT.plusSeconds(delayInSeconds);
+					zdt = lastZDT.plusSeconds(delayInSeconds);
+				}
+
+				// new: create thread-groups
+				// connected tweets to a thread are labeled in column "Threading"
+				String thread = null;
+				if(split.length > 3) {
+					thread = split[3].trim();
+
+					if (thread.length() > 0) {
+						if (threadGroups.containsKey(thread)) {
+							group = threadGroups.get(thread);
+						} else {
+							// create new group for each thread
+							group = new TweetGroup(title + "_Thread_" + thread, description);
+							group.setThreaded(true);
+							threadGroups.put(thread, group);
+						}
+					}
+				}
+				else {
+					group = threadGroups.get("default");
 				}
 
 				// get tweet-image
 				String imageUrl = null;
-				if (split.length > 3) {
-					imageUrl = split[3];
+				if (split.length > 4) {
+					imageUrl = split[4];
 					if(imageUrl.length() > 0){
 						try {
-							Resource image = new UrlResource(imageUrl);
+							if(ImageIO.read(new URL(imageUrl)) == null){
+								if (!(imageUrl.endsWith(".jpg") || imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".png") || imageUrl.endsWith(".gif") || imageUrl.endsWith(".webp"))) {
+									throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url, wrong format, please use jpg, jpeg, gif, png or webp: "+imageUrl+" (row: "+row+" column: 5)");
+								}
+								throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 5)");
+							}
 						} catch (Exception e) {
-							throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 4)");
+							throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 5)");
 						}
 					}
 				}
 				// get latitude
 				float latitude = 0;
 				float longitude = 0;
-				if (split.length > 4) {
+				if (split.length > 5) {
 					try{
-						String number = split[4];
+						String number = split[5];
 						number = number.replace(",", ".");
 						latitude = Float.parseFloat(number);
 					}
 					catch(NumberFormatException e){
-						throw new MalformedTSVFileException(row, 5, split[4], "malformed latitude: "+split[4]+"   (row: "+row+" column: 5)" );
+						throw new MalformedTSVFileException(row, 6, split[5], "malformed latitude: "+split[4]+"   (row: "+row+" column: 6)" );
 					}
 					// get longitude
-					if (split.length > 5) {
+					if (split.length > 6) {
 						try{
-							String number = split[5];
+							String number = split[6];
 							number = number.replace(",", "\\.");
-							longitude = Float.parseFloat(split[5]);
+							longitude = Float.parseFloat(split[6]);
 						}
 						catch(NumberFormatException e){
-							throw new MalformedTSVFileException(row, 6, split[5], "malformed longitude: "+split[5]+"   (row: "+row+" column: 6)");
+							throw new MalformedTSVFileException(row, 7, split[6], "malformed longitude: "+split[5]+"   (row: "+row+" column: 7)");
 						}
 					}
 					else{
@@ -240,16 +275,15 @@ public class TweetFactory {
 				content = StringEscapeUtils.unescapeJava(content);
 
 				// add delay
-				ldt = ldt.plusYears(delay);
-
+				zdt = zdt.plusYears(delay);
 
 				if (delay == 0) {
-					while (ldt.isBefore(LocalDateTime.now())) {
-						ldt = ldt.plusYears(1);
+					while (zdt.isBefore(ZonedDateTime.now(berlinTimeZone))) {
+						zdt = zdt.plusYears(1);
 					}
 				}
 				// normalize date to the format yyyy-MM-dd HH:mm
-				String formattedDate = ldt.format(formatter);
+				String formattedDate = zdt.format(formatter);
 				// set default time to 12:00
 				boolean midnight = false;
 				if (time.contains(" 00:00")) {
@@ -258,20 +292,24 @@ public class TweetFactory {
 				if (!midnight) {
 					formattedDate = formattedDate.replace(" 00:00", " 12:00");
 				}
-				if (ldt.isAfter(LocalDateTime.now())) {
+				if (zdt.isAfter(ZonedDateTime.now(berlinTimeZone))) {
 					tweet = new Tweet(formattedDate, content, imageUrl, longitude, latitude);
 					group.addTweet(tweet);
 				}
 				line = in.readLine();
 				row++;
-				lastLDT = ldt;
+				lastZDT = zdt;
 			}
+			for (String thread : threadGroups.keySet()){
+				toReturn.add(threadGroups.get(thread));
+			}
+			threadGroups = new HashMap<>();
 			in.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
-		return group;
+		return toReturn;
 	}
 
 	/**
@@ -335,7 +373,7 @@ public class TweetFactory {
 				tweets.add(tweet);
 			}
 		}
-		currentYear = LocalDateTime.now().getYear();
+		currentYear = ZonedDateTime.now(berlinTimeZone).getYear();
 		TweetGroup group = new TweetGroup(doc.getTitle(), description);
 		group.setTweets(tweets);
 		return group;
@@ -478,18 +516,18 @@ public class TweetFactory {
 		if (pastDate.length() == 7) {
 			pastDate = pastDate.concat("-01");
 		}
-		LocalDateTime ldtOriginal = parseDateString(pastDate);
-		if (ldtOriginal == null)
+		ZonedDateTime zdtOriginal = parseDateString(pastDate).atZone(berlinTimeZone);
+		if (zdtOriginal == null)
 			return null;
 		// find next anniverary in the future
-		LocalDateTime ldt = LocalDateTime.of(currentYear, ldtOriginal.getMonth(), ldtOriginal.getDayOfMonth(),
-				ldtOriginal.getHour(), ldtOriginal.getMinute());
-		LocalDateTime today = LocalDateTime.now();
-		if (ldt.isBefore(today)) {
-			ldt = ldt.plusYears(1);
+		ZonedDateTime zdt = LocalDateTime.of(currentYear, zdtOriginal.getMonth(), zdtOriginal.getDayOfMonth(),
+				zdtOriginal.getHour(), zdtOriginal.getMinute()).atZone(berlinTimeZone);
+		ZonedDateTime today = ZonedDateTime.now(berlinTimeZone);
+		if (zdt.isBefore(today)) {
+			zdt = zdt.plusYears(1);
 		}
 		// normalize date to the format YYYY-MM-dd HH:mm
-		String formattedDate = ldt.format(formatter);
+		String formattedDate = zdt.format(formatter);
 		if (!midnight) {
 			formattedDate = formattedDate.replace(" 00:00", " 12:00");
 		}

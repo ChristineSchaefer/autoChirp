@@ -157,8 +157,29 @@ public class GroupController {
         }
         tweetsList.removeAll(old);
         tweetsList.addAll(old);
+
+        // new block: create a list of connected groups of the current group
+        // connected by the same description (result of import by google or tsv table)
+        List<Integer> tweetGroupIDs = DBConnector.getGroupIDsForUser(userID);
+        List<TweetGroup> threadedGroups = new ArrayList<TweetGroup>();
+        for (int id : tweetGroupIDs) {
+            TweetGroup tw = DBConnector.getTweetGroupForUser(userID, id);
+            assert tw != null;
+            if (tw.groupID == groupID) {
+                continue;
+            }
+            if (tweetGroup.description.equals(tw.description) && !threadedGroups.contains(tw)) {
+                threadedGroups.add(tw);
+            }
+            /*if (tweetGroup.title.contains(tw.title)){
+                threadedGroups.add(tw);
+            }*/
+        }
+
         ModelAndView mv = new ModelAndView("group");
         mv.addObject("tweetGroup", tweetGroup);
+        //threadedGroups added to view
+        mv.addObject("threadedGroups", threadedGroups);
 
         if (tweetsList.size() <= tweetsPerPage) {
             mv.addObject("tweetsList", tweetsList);
@@ -317,7 +338,7 @@ public class GroupController {
         }
 
         File file;
-        TweetGroup tweetGroup;
+        List<TweetGroup> tweetGroup = new ArrayList<>();
         TweetFactory tweeter = new TweetFactory(dateformats);
 
         try {
@@ -330,6 +351,7 @@ public class GroupController {
         }
 
         try {
+            // new: returns list (not single tweetGroup)
             tweetGroup = tweeter.getTweetsFromTSVFile(file, title, description, (delay <= 0) ? 0 : delay, encoding);
         } catch (MalformedTSVFileException e) {
             ModelAndView mv = new ModelAndView("error");
@@ -337,32 +359,71 @@ public class GroupController {
             return mv;
         }
 
-        List<Tweet> trimmed = new ArrayList<Tweet>();
-        for (Tweet t : tweetGroup.tweets)
-            if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
-                trimmed.add(t);
-        int groupID = DBConnector.insertTweetGroup(tweetGroup, userID);
-        file.delete();
+        // no threads in list = list has only one TweetGroup
+        if(tweetGroup.size() == 1){
+            List<Tweet> trimmed = new ArrayList<Tweet>();
+            int groupID;
+            for (Tweet t : tweetGroup.get(0).tweets)
+                if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
+                    trimmed.add(t);
+            groupID = DBConnector.insertTweetGroup(tweetGroup.get(0), userID);
+            file.delete();
 
-        if (!trimmed.isEmpty()) {
-            // String trim = new String();
-            // tweetGroup = DBConnector.getTweetGroupForUser(userID, groupID);
-            // for (Tweet t : tweetGroup.tweets)
-            // for (Tweet u : trimmed)
-            // if (t.compareTo(u) == 0)
-            // trim += trim.isEmpty() ? t.tweetID : "," + t.tweetID;
 
-            ModelAndView mv = new ModelAndView("confirm");
-            mv.addObject("next", "/groups/view/" + groupID);
-            mv.addObject("confirm", "Attention! Some of the imported Tweets exeed Twitters " + Tweet.MAX_TWEET_LENGTH + " character limit. "
-                    + "For Your conveniance the full text will be atteched to those Tweets as an image. "
-                    + "Those Tweets are highlighted on the next page.");
+            if (!trimmed.isEmpty()) {
+                // String trim = new String();
+                // tweetGroup = DBConnector.getTweetGroupForUser(userID, groupID);
+                // for (Tweet t : tweetGroup.tweets)
+                // for (Tweet u : trimmed)
+                // if (t.compareTo(u) == 0)
+                // trim += trim.isEmpty() ? t.tweetID : "," + t.tweetID;
 
-            return mv;
+                ModelAndView mv = new ModelAndView("confirm");
+                mv.addObject("next", "/groups/view/" + groupID);
+                mv.addObject("confirm", "Attention! Some of the imported Tweets exeed Twitters " + Tweet.MAX_TWEET_LENGTH + " character limit. "
+                        + "For Your conveniance the full text will be atteched to those Tweets as an image. "
+                        + "Those Tweets are highlighted on the next page.");
+
+                return mv;
+            }
+
+            return (groupID > 0) ? new ModelAndView("redirect:/groups/view/" + groupID)
+                    : new ModelAndView("redirect:/error");
         }
 
-        return (groupID > 0) ? new ModelAndView("redirect:/groups/view/" + groupID)
-                : new ModelAndView("redirect:/error");
+        // threads exists = there are more than one element in list
+        else {
+            List<Tweet> trimmed = new ArrayList<Tweet>();
+            int groupID;
+            // iterate over each TweetGroup in list
+            for (TweetGroup tw : tweetGroup) {
+                for (Tweet t : tw.tweets)
+                    if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
+                        trimmed.add(t);
+                 groupID = DBConnector.insertTweetGroup(tw, userID);
+                file.delete();
+            }
+            if (!trimmed.isEmpty()) {
+                // String trim = new String();
+                // tweetGroup = DBConnector.getTweetGroupForUser(userID, groupID);
+                // for (Tweet t : tweetGroup.tweets)
+                // for (Tweet u : trimmed)
+                // if (t.compareTo(u) == 0)
+                // trim += trim.isEmpty() ? t.tweetID : "," + t.tweetID;
+
+                // new: returns group overview because there is more than one new group
+                ModelAndView mv = new ModelAndView("confirm");
+                mv.addObject("next", "/groups/view/");
+                mv.addObject("confirm", "Attention! Some of the imported Tweets exeed Twitters " + Tweet.MAX_TWEET_LENGTH + " character limit. "
+                        + "For Your conveniance the full text will be atteched to those Tweets as an image. "
+                        + "Those Tweets are highlighted on the next page.");
+
+                trimmed = new ArrayList<>();
+                return mv;
+            }
+            return (tweetGroup.size() > 0) ? new ModelAndView("redirect:/groups/view")
+                    : new ModelAndView("redirect:/error");
+        }
     }
 
     /**
@@ -403,7 +464,7 @@ public class GroupController {
         }
 
         File file;
-        TweetGroup tweetGroup;
+        List<TweetGroup> tweetGroup = new ArrayList<>();
         TweetFactory tweeter = new TweetFactory(dateformats);
 
         try {
@@ -418,6 +479,7 @@ public class GroupController {
         }
 
         try {
+            // new: returns list (not single tweetGroup)
             tweetGroup = tweeter.getTweetsFromTSVFile(file, title, description, (delay <= 0) ? 0 : delay, encoding);
         } catch (MalformedTSVFileException e) {
             ModelAndView mv = new ModelAndView("error");
@@ -425,33 +487,72 @@ public class GroupController {
             return mv;
         }
 
-        List<Tweet> trimmed = new ArrayList<Tweet>();
-        for (Tweet t : tweetGroup.tweets)
-            if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
-                trimmed.add(t);
+        // no threads in list = list has only one TweetGroup
+        if (tweetGroup.size() == 1) {
+            List<Tweet> trimmed = new ArrayList<Tweet>();
+            int groupID;
+            for (Tweet t : tweetGroup.get(0).tweets)
+                if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
+                    trimmed.add(t);
 
-        int groupID = DBConnector.insertTweetGroup(tweetGroup, userID);
-        file.delete();
+            groupID = DBConnector.insertTweetGroup(tweetGroup.get(0), userID);
+            file.delete();
 
-        if (!trimmed.isEmpty()) {
-            // String trim = new String();
-            // tweetGroup = DBConnector.getTweetGroupForUser(userID, groupID);
-            // for (Tweet t : tweetGroup.tweets)
-            // for (Tweet u : trimmed)
-            // if (t.compareTo(u) == 0)
-            // trim += trim.isEmpty() ? t.tweetID : "," + t.tweetID;
 
-            ModelAndView mv = new ModelAndView("confirm");
-            mv.addObject("next", "/groups/view/" + groupID);
-            mv.addObject("confirm", "Attention! Some of the imported Tweets exeed Twitters " + Tweet.MAX_TWEET_LENGTH + " character limit. "
-                    + "For Your conveniance the full text will be atteched to those Tweets as an image. "
-                    + "Those Tweets are highlighted on the next page.");
+            if (!trimmed.isEmpty()) {
+                // String trim = new String();
+                // tweetGroup = DBConnector.getTweetGroupForUser(userID, groupID);
+                // for (Tweet t : tweetGroup.tweets)
+                // for (Tweet u : trimmed)
+                // if (t.compareTo(u) == 0)
+                // trim += trim.isEmpty() ? t.tweetID : "," + t.tweetID;
 
-            return mv;
+                ModelAndView mv = new ModelAndView("confirm");
+                mv.addObject("next", "/groups/view/" + groupID);
+                mv.addObject("confirm", "Attention! Some of the imported Tweets exeed Twitters " + Tweet.MAX_TWEET_LENGTH + " character limit. "
+                        + "For Your conveniance the full text will be atteched to those Tweets as an image. "
+                        + "Those Tweets are highlighted on the next page.");
+
+                return mv;
+            }
+
+
+            return (groupID > 0) ? new ModelAndView("redirect:/groups/view/" + groupID)
+                    : new ModelAndView("redirect:/error");
         }
 
-        return (groupID > 0) ? new ModelAndView("redirect:/groups/view/" + groupID)
-                : new ModelAndView("redirect:/error");
+        // threads exists = there are more than one element in list
+        else {
+            List<Tweet> trimmed = new ArrayList<Tweet>();
+            // iterate over each Tweetgroup in list
+            for (TweetGroup tw : tweetGroup) {
+                int groupID;
+                for (Tweet t : tw.tweets)
+                    if (t.adjustedLength() > Tweet.MAX_TWEET_LENGTH)
+                        trimmed.add(t);
+                groupID = DBConnector.insertTweetGroup(tw, userID);
+                file.delete();
+            }
+            if (!trimmed.isEmpty()) {
+                // String trim = new String();
+                // tweetGroup = DBConnector.getTweetGroupForUser(userID, groupID);
+                // for (Tweet t : tweetGroup.tweets)
+                // for (Tweet u : trimmed)
+                // if (t.compareTo(u) == 0)
+                // trim += trim.isEmpty() ? t.tweetID : "," + t.tweetID;
+
+                // new: returns group overview because there is more than one new group
+                ModelAndView mv = new ModelAndView("confirm");
+                mv.addObject("next", "/groups/view/");
+                mv.addObject("confirm", "Attention! Some of the imported Tweets exeed Twitters " + Tweet.MAX_TWEET_LENGTH + " character limit. "
+                        + "For Your conveniance the full text will be atteched to those Tweets as an image. "
+                        + "Those Tweets are highlighted on the next page.");
+                trimmed = new ArrayList<>();
+                return mv;
+            }
+            return (tweetGroup.size() > 0) ? new ModelAndView("redirect:/groups/view")
+                    : new ModelAndView("redirect:/error");
+        }
     }
 
     /**

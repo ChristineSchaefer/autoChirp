@@ -44,7 +44,7 @@
 								<div class="col-md-6">
 									<h4>Adding new Tweets</h4>
 									<p class="text-justify">
-										When adding a new Tweet, the following information has to be provided: The group-mapping, Tweet content and scheduled date. Beyond that, an image attachment (as URL) and a geolocation may be specified. As all Tweets must be contained in groups, the input-field
+										When adding a new Tweet, the following information has to be provided: The group-mapping, Tweet content and scheduled date. The latter needs to be provided in the time zone Europe/Berlin (CET or CEST), as all dates and times given in the application will be dealt with based on this time zone. Beyond that, an image attachment (as URL) and a geolocation may be specified. As all Tweets must be contained in groups, the input-field
 										for group-mapping is required to be filled. You can either enter the name of a group, that will be created ad-hoc for the Tweet, or reference an existing group by ID (from the dropdown-list).
 									</p>
 									<h5><b>Notice</b></h5>
@@ -65,7 +65,7 @@
 								<div class="col-md-6">
 									<h4>Editing Tweets</h4>
 									<p class="text-justify">
-										All added Tweets can be edited, as long as they have not been published. Further, the group-mapping and scheduled date cannot be modified as they are fixed upon Tweet-creation. Other than that, the form to edit a Tweet is the same as the one to add a
+										All added Tweets can be edited, as long as they have not been published. Further, the group-mapping cannot be modified as it is fixed upon Tweet-creation. Other than that, the form to edit a Tweet is the same as the one to add a
 										new Tweet.
 									</p>
 								</div>
@@ -148,6 +148,91 @@
 								</div>
 							</div>
 						</div>
+						<div id="help_groups_connected" class="subgroup">
+							<div class="row">
+								<div class="col-md-6">
+									<h4>Connected groups</h4>
+									<p class="text-justify">
+										Connected groups describe groups that belong together, such as a main group and associated groups with threads (see also section Import Groups).
+										Connected groups make it possible in the group view to get to the related connected groups via a button below the list of tweets of this group.
+										This makes it easier to view and edit the Connected groups. The connecting feature of Connected groups is the description.
+										If this is the same for different groups, they are automatically connected.
+									</p>
+								</div>
+								<div class="col-md-6">
+									<div id="myCarousel_2" class="carousel slide" data-ride="carousel" data-interval="false" title="Click for full mode.">
+										<!-- Indicators -->
+										<ol class="carousel-indicators">
+											<li data-target="#myCarousel_2" data-slide-to="0" class="active"></li>
+											<li data-target="#myCarousel_2" data-slide-to="1"></li>
+											<li data-target="#myCarousel_2" data-slide-to="2"></li>
+											<li data-target="#myCarousel_2" data-slide-to="3"></li>
+											<li data-target="#myCarousel_2" data-slide-to="4"></li>
+											<li data-target="#myCarousel_2" data-slide-to="5"></li>
+											<li data-target="#myCarousel_2" data-slide-to="6"></li>
+											<li data-target="#myCarousel_2" data-slide-to="7"></li>
+										</ol>
+
+										<!-- Wrapper for slides -->
+										<div class="carousel-inner">
+											<div class="item active">
+												<a href="/pres/connected_groups/connected_groups_autoChirp.pdf" target="_blank">
+													<img src="/pres/connected_groups/connected_groups_autoChirp_start.png" alt="Connected groups"/>
+												</a>
+											</div>
+
+											<div class="item">
+												<a href="/pres/connected_groups/connected_groups_autoChirp.pdf" target="_blank">
+													<img src="/pres/connected_groups/connected_groups_autoChirp.png" alt="Open groups view"/>
+												</a>
+											</div>
+
+											<div class="item">
+												<a href="/pres/connected_groups/connected_groups_autoChirp.pdf" target="_blank">
+													<img src="/pres/connected_groups/connected_groups_autoChirp (1).png" alt="Connected groups"/>
+												</a>
+											</div>
+
+											<div class="item">
+												<a href="/pres/connected_groups/connected_groups_autoChirp.pdf" target="_blank">
+													<img src="/pres/connected_groups/connected_groups_autoChirp (2).png" alt="Connected groups"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/connected_groups/connected_groups_autoChirp.pdf" target="_blank">
+													<img src="/pres/connected_groups/connected_groups_autoChirp (3).png" alt="Connected groups button in group view"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/connected_groups/connected_groups_autoChirp.pdf" target="_blank">
+													<img src="/pres/connected_groups/connected_groups_autoChirp (4).png" alt="Connecting feature"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/connected_groups/connected_groups_autoChirp.pdf" target="_blank">
+													<img src="/pres/connected_groups/connected_groups_autoChirp (5).png" alt="Add a new Connected group"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/connected_groups/connected_groups_autoChirp.pdf" target="_blank">
+													<img src="/pres/connected_groups/connected_groups_autoChirp (6).png" alt="That's it."/>
+												</a>
+											</div>
+										</div>
+
+										<!-- Left and right controls -->
+										<a class="left carousel-control" href="#myCarousel_2" data-slide="prev">
+											<span class="glyphicon glyphicon-chevron-left"></span>
+											<span class="sr-only">Previous</span>
+										</a>
+										<a class="right carousel-control" href="#myCarousel_2" data-slide="next">
+											<span class="glyphicon glyphicon-chevron-right"></span>
+											<span class="sr-only">Next</span>
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
 					</section>
 					<hr></hr>
 					<section id="help_imports" class="group">
@@ -156,20 +241,119 @@
 							One mayor feature of this application is the ability to import large sets of Tweets automatically, either from a Wikipedia-article or TSV-file. In both cases, a new group is created, containing all parsed Tweets. This group has to be activated by the
 							user manually after the impurt succeeded. Please be aware that importing Tweets from Wikipedia may bear differing results, as parsing natural language is still far from perfected.
 						</p>
-						<div id="help_imports_gdrive" class="subgroup">
+						<div id="help_imports_gdrive" class="subgroup m-b-2">
 							<div class="row">
 								<div class="col-md-6">
 									<h4>Importing from GoogleDrive</h4>
 									<p class="text-justify">
-										Using the GoogleDrive public API, You can import a specifically layouted spreadsheet by just supplying the URL of Your publicly shared spreadsheet. You can use <a href="https://docs.google.com/spreadsheets/d/1wo705qqTWUx_wwTNbDjOz2-wcE0gcAHzuZD1hSiwyPg"
-										title="GoogleDocs spreadsheet import template">this template</a> to quickly create a spreadsheet with Your own Tweets. When You have filled in Your data, just share the sheet via link, as described <a href="https://support.google.com/docs/answer/2494822"
+										Using the GoogleDrive public API, You can import a specifically layouted spreadsheet by just supplying the URL of Your publicly shared spreadsheet. You can use <a href="https://docs.google.com/spreadsheets/d/1hdt6-BtZvE0G2Nfg4V1sT3X2lcgZZH7GJYpIv0Y14VI"
+										title="GoogleDocs spreadsheet import template" target="_blank">this template</a> to quickly create a spreadsheet with Your own Tweets. When You have filled in Your data, just share the sheet via link, as described <a href="https://support.google.com/docs/answer/2494822"
 										title="Share files and folders, Google Help">here</a>, and paste that link to the autoChirp import-form for GoogleDrive sources.
 									</p>
 								</div>
 								<div class="col-md-6">
-									<video class="helpcast" preload="metadata" controls="true">
-										<source src="/vid/helpcast10_imports_gdrive.webm" type="video/webm" /> Your browser does not support the HTML5-video tag or WebM.
-									</video>
+									<!--<video class="helpcast" preload="metadata" controls="true">
+										<source src="/vid/helpcast10_imports_gdrive.mp4" type="video/webm" /> Your browser does not support the HTML5-video tag or WebM.
+									</video>-->
+									<div id="myCarousel_1" class="carousel slide" data-ride="carousel" data-interval="false" title="Click for full mode.">
+										<!-- Indicators -->
+										<ol class="carousel-indicators">
+											<li data-target="#myCarousel_1" data-slide-to="0" class="active"></li>
+											<li data-target="#myCarousel_1" data-slide-to="1"></li>
+											<li data-target="#myCarousel_1" data-slide-to="2"></li>
+											<li data-target="#myCarousel_1" data-slide-to="3"></li>
+											<li data-target="#myCarousel_1" data-slide-to="4"></li>
+											<li data-target="#myCarousel_1" data-slide-to="5"></li>
+											<li data-target="#myCarousel_1" data-slide-to="6"></li>
+											<li data-target="#myCarousel_1" data-slide-to="7"></li>
+											<li data-target="#myCarousel_1" data-slide-to="8"></li>
+											<li data-target="#myCarousel_1" data-slide-to="9"></li>
+											<li data-target="#myCarousel_1" data-slide-to="10"></li>
+											<li data-target="#myCarousel_1" data-slide-to="11"></li>
+											<li data-target="#myCarousel_1" data-slide-to="12"></li>
+										</ol>
+
+										<!-- Wrapper for slides -->
+										<div class="carousel-inner">
+											<div class="item active">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp.png" alt="Importing from google docs/drive tutorial"/>
+												</a>
+											</div>
+
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (1).png" alt="To import a spreadsheet from google drive/docs, You need to prepare the sheet according to the autoChirp import-format first."/>
+												</a>
+											</div>
+
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (2).png" alt="Template"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (3).png" alt="Template"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (4).png" alt="Template"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (5).png" alt="Template"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (6).png" alt="Share template via link"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (7).png" alt="Share template via link"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (8).png" alt="Open autoChirp google import form"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (9).png" alt="Just add the link, a name and a description and hit the import button"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (10).png" alt="Finish import"/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (11).png" alt="Otherwise the TweetGroup-View will open."/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/google/google_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/google/google_import_autoChirp (12).png" alt="That’s it!"/>
+												</a>
+											</div>
+										</div>
+
+										<!-- Left and right controls -->
+										<a class="left carousel-control" href="#myCarousel_1" data-slide="prev">
+											<span class="glyphicon glyphicon-chevron-left"></span>
+											<span class="sr-only">Previous</span>
+										</a>
+										<a class="right carousel-control" href="#myCarousel_1" data-slide="next">
+											<span class="glyphicon glyphicon-chevron-right"></span>
+											<span class="sr-only">Next</span>
+										</a>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -194,14 +378,84 @@
 								<div class="col-md-6">
 									<h4>Importing TSV-files</h4>
 									<p class="text-justify">
-										Probably the most effective way to add huge sets of Tweets, possibly with image attachment and geolocation, is importing them from a TSV (tab-separated-values) file. The format of the file has to be exactly as follows (a comma represents a tab in the
-										actual file): Date, time, Tweet content, image attachment, latitude, longitude. Uploading files which do not concur to this format will result in errors.
+										Probably the most effective way to add huge sets of Tweets, possibly with image attachment and geolocation, is importing them from a TSV (tab-separated-values) file.
+										The format of the file has to be exactly as follows (a comma represents a tab in the actual file): Date, time, Tweet content, Threading,  image attachment, latitude, longitude.
+										Uploading files which do not concur to this format will result in errors.
 									</p>
 								</div>
 								<div class="col-md-6">
-									<video class="helpcast" preload="metadata" controls="true">
-										<source src="/vid/helpcast8_imports_tsv-file.webm" type="video/webm" /> Your browser does not support the HTML5-video tag or WebM.
-									</video>
+									<!--<video class="helpcast" preload="metadata" controls="true">
+										<source src="/vid/helpcast8_imports_tsv-file.mp4" type="video/webm" /> Your browser does not support the HTML5-video tag or WebM.
+									</video>-->
+									<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="false" title="Click for full mode.">
+										<!-- Indicators -->
+										<ol class="carousel-indicators">
+											<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+											<li data-target="#myCarousel" data-slide-to="1"></li>
+											<li data-target="#myCarousel" data-slide-to="2"></li>
+											<li data-target="#myCarousel" data-slide-to="3"></li>
+											<li data-target="#myCarousel" data-slide-to="4"></li>
+											<li data-target="#myCarousel" data-slide-to="5"></li>
+											<li data-target="#myCarousel" data-slide-to="6"></li>
+											<li data-target="#myCarousel" data-slide-to="7"></li>
+										</ol>
+
+										<!-- Wrapper for slides -->
+										<div class="carousel-inner">
+											<div class="item active">
+												<a href="/pres/tsv/tsv_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/tsv/tsv_import_autoChirp.png" alt="Importing TSV-files tutorial"/>
+												</a>
+											</div>
+
+											<div class="item">
+												<a href="/pres/tsv/tsv_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/tsv/tsv_import_autoChirp (1).png" alt="Open autoChirp TSV import form"/>
+												</a>
+											</div>
+
+											<div class="item">
+												<a href="/pres/tsv/tsv_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/tsv/tsv_import_autoChirp (2).png" alt="This form is used to import TSV (tab-separated-values) files."/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/tsv/tsv_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/tsv/tsv_import_autoChirp (3).png" alt="This file is an example of a correctly formatted TSV file."/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/tsv/tsv_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/tsv/tsv_import_autoChirp (4).png" alt="After filling in all the required fields, press the import group-button."/>
+												</a>
+											</div>
+											<div class="item">
+												<a href="/pres/tsv/tsv_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/tsv/tsv_import_autoChirp (5).png" alt="Finish import"/>
+												</a>
+											</div>
+											<div class="item">
+													<a href="/pres/tsv/tsv_import_autoChirp.pdf" target="_blank">
+														<img src="/pres/tsv/tsv_import_autoChirp (6).png" alt="Otherwise the TweetGroup-View will open."/>
+													</a>
+											</div>
+											<div class="item">
+												<a href="/pres/tsv/tsv_import_autoChirp.pdf" target="_blank">
+													<img src="/pres/tsv/tsv_import_autoChirp (7).png" alt="That’s it!"/>
+												</a>
+											</div>
+										</div>
+
+										<!-- Left and right controls -->
+										<a class="left carousel-control" href="#myCarousel" data-slide="prev">
+											<span class="glyphicon glyphicon-chevron-left"></span>
+											<span class="sr-only">Previous</span>
+										</a>
+										<a class="right carousel-control" href="#myCarousel" data-slide="next">
+											<span class="glyphicon glyphicon-chevron-right"></span>
+											<span class="sr-only">Next</span>
+										</a>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -211,9 +465,7 @@
 						<div class="row">
 							<div class="col-md-6">
 								<h3>Flashcards</h3>
-								<p class="text-justify" th:text="${'As advertised on the landing page of this application, autoChirp has the handy ability to render text into an image and attach this image to a Tweet.
-									For ease of usability, this feature is automatically applied to all of Your Tweets exeeding Twitters ' + maxTweetLength + ' character limit.
-									As autoChirp also offers to attach custom images to Your Tweets but can only append one image due to API limitations, Your image will be included in the flashcard.'}">
+								<p class="text-justify" th:text="${'As advertised on the landing page of this application, autoChirp has the handy ability to render text into an image and attach this image to a Tweet. For ease of usability, this feature is automatically applied to all of Your Tweets exeeding Twitters ' + maxTweetLength + ' character limit. As autoChirp also offers to attach custom images to Your Tweets but can only append one image due to API limitations, Your image will be included in the flashcard.'}">
 								</p>
 							</div>
 							<div class="col-md-6">
@@ -241,6 +493,7 @@
 								<li><a href="#help_groups_add">Adding groups</a></li>
 								<li><a href="#help_groups_edit">Editing groups</a></li>
 								<li><a href="#help_groups_copy">Copying groups</a></li>
+								<li><a href="#help_groups_connected">Connected groups</a></li>
 							</ul>
 						</li>
 						<li>

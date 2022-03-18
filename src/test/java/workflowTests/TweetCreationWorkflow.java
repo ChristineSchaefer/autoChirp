@@ -93,26 +93,30 @@ public class TweetCreationWorkflow {
 		File testFile = new File("src/test/resources/testTSVFile_Image_Locations.txt");
 		
 		//without delay
-		TweetGroup group = factory.getTweetsFromTSVFile(testFile, "testTitle", "testDescription", 0, "UTF-8");
-		Assert.assertEquals(group.tweets.size(), 3);
-		System.out.println("Title: " + group.title);
-		System.out.println("Description: " + group.description);
-		System.out.println("numberOfTweets: " + group.tweets.size());
-		System.out.println("Tweets: ");
-		for (Tweet tweet : group.tweets) {
-			Assert.assertTrue(tweet.tweetDate.startsWith("2016"));
-			System.out.println(tweet.tweetDate+": "+ tweet.content);
+		List<TweetGroup> group = factory.getTweetsFromTSVFile(testFile, "testTitle", "testDescription", 0, "UTF-8");
+		for(TweetGroup tw : group) {
+			Assert.assertEquals(tw.tweets.size(), 3);
+			System.out.println("Title: " + tw.title);
+			System.out.println("Description: " + tw.description);
+			System.out.println("numberOfTweets: " + tw.tweets.size());
+			System.out.println("Tweets: ");
+			for (Tweet tweet : tw.tweets) {
+				Assert.assertTrue(tweet.tweetDate.startsWith("2016"));
+				System.out.println(tweet.tweetDate + ": " + tweet.content);
+			}
 		}
 		//with delay
 		group = factory.getTweetsFromTSVFile(testFile, "testTitle", "testDescription", 3, "UTF-8");
-		Assert.assertEquals(group.tweets.size(), 3);
-		System.out.println("Title: " + group.title);
-		System.out.println("Description: " + group.description);
-		System.out.println("numberOfTweets: " + group.tweets.size());
-		System.out.println("Tweets: ");
-		for (Tweet tweet : group.tweets) {
-			Assert.assertTrue(tweet.tweetDate.startsWith("2019"));
-			System.out.println(tweet.tweetDate+": "+ tweet.content+" "+tweet.imageUrl+" "+tweet.longitude+" "+tweet.latitude);
+		for(TweetGroup tw : group) {
+			Assert.assertEquals(tw.tweets.size(), 3);
+			System.out.println("Title: " + tw.title);
+			System.out.println("Description: " + tw.description);
+			System.out.println("numberOfTweets: " + tw.tweets.size());
+			System.out.println("Tweets: ");
+			for (Tweet tweet : tw.tweets) {
+				Assert.assertTrue(tweet.tweetDate.startsWith("2019"));
+				System.out.println(tweet.tweetDate + ": " + tweet.content + " " + tweet.imageUrl + " " + tweet.longitude + " " + tweet.latitude);
+			}
 		}
 	}
 	
@@ -125,10 +129,12 @@ public class TweetCreationWorkflow {
 	public void dateTimeFomatsTest() throws IOException, MalformedTSVFileException{
 		File file = new File("src/test/resources/testTSVFile_DateFormats.txt");
 		TweetFactory factory = new TweetFactory("src/main/resources/parser/datetime.formats");
-		TweetGroup group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8");
-		Assert.assertEquals(group.tweets.size(), 18);
-		for (Tweet tweet : group.tweets) {
-			System.out.println(tweet.tweetDate);
+		List<TweetGroup> group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8");
+		for(TweetGroup tw : group) {
+			Assert.assertEquals(tw.tweets.size(), 18);
+			for (Tweet tweet : tw.tweets) {
+				System.out.println(tweet.tweetDate);
+			}
 		}
 	}
 	
@@ -136,29 +142,31 @@ public class TweetCreationWorkflow {
 	public void repeatGroupForYearsTest() throws MalformedTSVFileException{
 		File file = new File("src/test/resources/testTSVFile_DateFormats.txt");
 		TweetFactory factory = new TweetFactory("src/main/resources/parser/datetime.formats");
-		TweetGroup group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8");
-		TweetGroup oneYearLater = DBConnector.createRepeatGroupInYears(group, 2, 2);
-		System.out.println(oneYearLater.title);
-		Assert.assertEquals(group.description, oneYearLater.description);
-		Assert.assertEquals(group.tweets.size(), oneYearLater.tweets.size());
-		for (int t = 0; t < group.tweets.size(); t++) {
-			Tweet t1 = group.tweets.get(t);
-			Tweet t2 = oneYearLater.tweets.get(t);
-			System.out.println("old: " + t1.tweetDate+"     new: "+t2.tweetDate);
-			Assert.assertEquals(t1.content, t2.content);
-			Assert.assertEquals(t1.groupName, t2.groupName);
-			Assert.assertTrue(t1.latitude == t2.latitude);
-			Assert.assertTrue(t1.longitude == t2.longitude);
-			Assert.assertEquals(t1.imageUrl, t2.imageUrl);
-			LocalDateTime ldt1 = LocalDateTime.parse(t1.tweetDate,
-					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-			LocalDateTime ldt2 = LocalDateTime.parse(t2.tweetDate,
-					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-			Assert.assertEquals(ldt1.getMonth(), ldt2.getMonth());
-			Assert.assertEquals(ldt1.getDayOfMonth(), ldt2.getDayOfMonth());
-			Assert.assertEquals(ldt1.getMinute(), ldt2.getMinute());
-			Assert.assertEquals(ldt1.getSecond(), ldt2.getSecond());
-			Assert.assertTrue(ldt2.getYear() - ldt1.getYear() == 2);
+		List<TweetGroup> group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8");
+		for(TweetGroup tw : group) {
+			TweetGroup oneYearLater = DBConnector.createRepeatGroupInYears(tw, 2, 2);
+			System.out.println(oneYearLater.title);
+			Assert.assertEquals(tw.description, oneYearLater.description);
+			Assert.assertEquals(tw.tweets.size(), oneYearLater.tweets.size());
+			for (int t = 0; t < tw.tweets.size(); t++) {
+				Tweet t1 = tw.tweets.get(t);
+				Tweet t2 = oneYearLater.tweets.get(t);
+				System.out.println("old: " + t1.tweetDate + "     new: " + t2.tweetDate);
+				Assert.assertEquals(t1.content, t2.content);
+				Assert.assertEquals(t1.groupName, t2.groupName);
+				Assert.assertTrue(t1.latitude == t2.latitude);
+				Assert.assertTrue(t1.longitude == t2.longitude);
+				Assert.assertEquals(t1.imageUrl, t2.imageUrl);
+				LocalDateTime ldt1 = LocalDateTime.parse(t1.tweetDate,
+						DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+				LocalDateTime ldt2 = LocalDateTime.parse(t2.tweetDate,
+						DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+				Assert.assertEquals(ldt1.getMonth(), ldt2.getMonth());
+				Assert.assertEquals(ldt1.getDayOfMonth(), ldt2.getDayOfMonth());
+				Assert.assertEquals(ldt1.getMinute(), ldt2.getMinute());
+				Assert.assertEquals(ldt1.getSecond(), ldt2.getSecond());
+				Assert.assertTrue(ldt2.getYear() - ldt1.getYear() == 2);
+			}
 		}
 	}
 	
@@ -166,26 +174,28 @@ public class TweetCreationWorkflow {
 	public void repeatGroupForSecondsTest() throws MalformedTSVFileException{
 		File file = new File("src/test/resources/testTSVFile_DateFormats.txt");
 		TweetFactory factory = new TweetFactory("src/main/resources/parser/datetime.formats");
-		TweetGroup group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8");
-		TweetGroup oneYearLater = DBConnector.createRepeatGroupInSeconds(group, 2, 2000, "newTitle");
-		System.out.println(oneYearLater.title);
-		Assert.assertEquals(group.description, oneYearLater.description);
-		Assert.assertEquals(group.tweets.size(), oneYearLater.tweets.size());
-		for (int t = 0; t < group.tweets.size(); t++) {
-			Tweet t1 = group.tweets.get(t);
-			Tweet t2 = oneYearLater.tweets.get(t);
-			System.out.println("old: " + t1.tweetDate+"     new: "+t2.tweetDate);
-			Assert.assertEquals(t1.content, t2.content);
-			Assert.assertEquals(t1.groupName, t2.groupName);
-			Assert.assertTrue(t1.latitude == t2.latitude);
-			Assert.assertTrue(t1.longitude == t2.longitude);
-			Assert.assertEquals(t1.imageUrl, t2.imageUrl);
-			LocalDateTime ldt1 = LocalDateTime.parse(t1.tweetDate,
-					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-			LocalDateTime ldt2 = LocalDateTime.parse(t2.tweetDate,
-					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-			Duration d = Duration.between(ldt1, ldt2);
-			Assert.assertTrue(d.getSeconds() == 2000);
+		List<TweetGroup> group = factory.getTweetsFromTSVFile(file, "dateFormatTest", "test all supported formats", 3, "UTF-8");
+		for(TweetGroup tw : group) {
+			TweetGroup oneYearLater = DBConnector.createRepeatGroupInSeconds(tw, 2, 2000, "newTitle");
+			System.out.println(oneYearLater.title);
+			Assert.assertEquals(tw.description, oneYearLater.description);
+			Assert.assertEquals(tw.tweets.size(), oneYearLater.tweets.size());
+			for (int t = 0; t < tw.tweets.size(); t++) {
+				Tweet t1 = tw.tweets.get(t);
+				Tweet t2 = oneYearLater.tweets.get(t);
+				System.out.println("old: " + t1.tweetDate + "     new: " + t2.tweetDate);
+				Assert.assertEquals(t1.content, t2.content);
+				Assert.assertEquals(t1.groupName, t2.groupName);
+				Assert.assertTrue(t1.latitude == t2.latitude);
+				Assert.assertTrue(t1.longitude == t2.longitude);
+				Assert.assertEquals(t1.imageUrl, t2.imageUrl);
+				LocalDateTime ldt1 = LocalDateTime.parse(t1.tweetDate,
+						DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+				LocalDateTime ldt2 = LocalDateTime.parse(t2.tweetDate,
+						DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+				Duration d = Duration.between(ldt1, ldt2);
+				Assert.assertTrue(d.getSeconds() == 2000);
+			}
 		}
 	}
 
