@@ -13,11 +13,13 @@ import autoChirp.DBConnector;
  * 
  * represents a single tweet consisting of content, tweetDate, imageUrl
  * (optional), and geo-locations (optional). If read from DB, also consisting of
- * tweetID, groupID, groupName and the status-attributes scheduled and tweeted
+ * tweetID, userID, groupID, groupName and the status-attributes scheduled and tweeted
  * 
  * @author Alena Geduldig
+ * @editor Laura Pascale Berg
  */
 public class Tweet implements Comparable<Tweet> {
+	public int userID;
 	public String tweetDate;
 	public String content;
 	public int tweetID;
@@ -61,6 +63,7 @@ public class Tweet implements Comparable<Tweet> {
 	 */
 	public Tweet(String tweetDate, String content, int tweetID, int groupID, boolean scheduled, boolean tweeted,
 			int userID, String imageUrl, float longitude, float latitude, long statusID) {
+		this.userID = userID;
 		this.tweetDate = tweetDate;
 		this.content = content;
 		this.tweetID = tweetID;

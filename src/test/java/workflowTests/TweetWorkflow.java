@@ -4,6 +4,8 @@ package workflowTests;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -16,10 +18,12 @@ import autoChirp.DBConnector;
 import autoChirp.tweetCreation.Tweet;
 import autoChirp.tweetCreation.TweetGroup;
 import autoChirp.tweeting.TweetScheduler;
+import org.springframework.beans.factory.annotation.Value;
 
 
 /**
  * @author Alena Geduldig
+ * @editor Laura Pascale Berg
  * 
  *         A test class for scheduling and twitter tweets - requires the file
  *         src/test/resources/twitter_secrets.txt with a valid TwitterHandle, oAuthToken and oAuthTokenSecret
@@ -32,19 +36,30 @@ import autoChirp.tweeting.TweetScheduler;
  */
 public class TweetWorkflow {
 
-	private static String dbPath = "src/test/resources/";
-	private static String dbFileName = "autoChirp.db";
-	private static String dbCreationFileName = "src/main/resources/database/createDatabaseFile.sql";
+	@Value("${autochirp.database.dbtestlink}")
+	private static String dblink;
+
+	@Value("${autochirp.database.dbcreatelink}")
+	private static String dbcreatelink;
+
+	@Value("${autochirp.database.schema}")
+	private static String schema;
 
 	private static String[] twitterSecrets;
 
+
 	/**
-	 * connect to database and create output-tables database
+	 * connect to database
+	 * if there isn't a database create database and create tables with schema
 	 */
 	@BeforeClass
 	public static void dbConnection() {
-		DBConnector.connect(dbPath + dbFileName);
-		DBConnector.createOutputTables(dbCreationFileName);
+		try {
+			DBConnector.connect(dblink);
+		} catch (SQLException e) {
+			DBConnector.createDatabase(dbcreatelink, dblink);
+			DBConnector.createOutputTables(schema);
+		}
 	}
 
 	@BeforeClass

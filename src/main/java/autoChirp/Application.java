@@ -4,9 +4,15 @@ import autoChirp.tweetCreation.TweetGroup;
 import autoChirp.tweeting.TweetScheduler;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
 import javax.annotation.PostConstruct;
+
+import com.mysql.cj.jdbc.exceptions.SQLError;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,6 +30,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Philip Schildkamp
  * @author Alena Geduldig
+ * @editor Laura Pascale Berg
  */
 @Configuration
 @EnableAutoConfiguration
@@ -32,8 +39,11 @@ public class Application extends SpringBootServletInitializer {
 
 	private static Class<Application> applicationClass = Application.class;
 
-	@Value("${autochirp.database.dbfile}")
-	private String dbfile;
+	@Value("${autochirp.database.dblink}")
+	private String dblink;
+
+	@Value("${autochirp.database.dbcreatelink}")
+	private String dbcreatelink;
 
 	@Value("${autochirp.database.schema}")
 	private String schema;
@@ -46,6 +56,7 @@ public class Application extends SpringBootServletInitializer {
 	 */
 	public static void main(String[] args) throws IOException {
 		ApplicationContext ctx = SpringApplication.run(Application.class, args);
+
 	}
 
 	/**
@@ -60,16 +71,15 @@ public class Application extends SpringBootServletInitializer {
 
 	/**
 	 * Open database connection and schedule relevant Tweets.
+	 * If there isn't a database create database and create tables with schema
 	 */
 	@PostConstruct
 	private void initializeApplication() {
-		File file = new File(dbfile);
-
-		if (!file.exists()) {
-			DBConnector.connect(dbfile);
+		try {
+			DBConnector.connect(dblink);
+		} catch (SQLException e) {
+			DBConnector.createDatabase(dbcreatelink, dblink);
 			DBConnector.createOutputTables(schema);
-		} else {
-			DBConnector.connect(dbfile);
 		}
 
 		Map<Integer, List<TweetGroup>> toSchedule = DBConnector.getAllEnabledGroups();

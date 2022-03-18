@@ -3,6 +3,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,29 +21,40 @@ import autoChirp.tweetCreation.MalformedTSVFileException;
 import autoChirp.tweetCreation.Tweet;
 import autoChirp.tweetCreation.TweetFactory;
 import autoChirp.tweetCreation.TweetGroup;
-
+import org.springframework.beans.factory.annotation.Value;
 
 
 /**
  * @author Alena Geduldig
+ * @editor Laura Pascale Berg
  * 
  * JUnit test-class for the Data-Minint- and TweetCreationWorkflow
  *
  */
 public class TweetCreationWorkflow {
-	
-	private static String dbPath = "src/test/resources/";
-	private static String dbFileName = "autoChirp.db";
-	private static String dbCreationFileName = "src/main/resources/database/schema.sql";
-	
+
+	@Value("${autochirp.database.dbtestlink}")
+	private static String dblink;
+
+	@Value("${autochirp.database.dbcreatelink}")
+	private static String dbcreatelink;
+
+	@Value("${autochirp.database.schema}")
+	private static String schema;
+
 
 	/**
-	 * connect to database and  create output-tables database
+	 * connect to database
+	 * if there isn't a database create database and create tables with schema
 	 */
 	@BeforeClass
 	public static void dbConnection() {
-		DBConnector.connect(dbPath + dbFileName);
-		DBConnector.createOutputTables(dbCreationFileName);
+		try {
+			DBConnector.connect(dblink);
+		} catch (SQLException e) {
+			DBConnector.createDatabase(dbcreatelink, dblink);
+			DBConnector.createOutputTables(schema);
+		}
 	}
 
 

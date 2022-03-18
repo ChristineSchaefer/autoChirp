@@ -23,11 +23,15 @@ public class TweetWidgetCreator {
          *
          */
 
+        /**
+         * displaying recently posted tweets via the twitterID and the statusID --> ToDo fixed
+         */
+
         StringBuffer buffer = new StringBuffer();
 
         DBConnector.getLatestTweets().stream().forEach(tweet -> {
             try {
-                buffer.append(OEmbedConnector.getWidgetJson("placeholder", String.valueOf(tweet.statusID)).get("html"));
+                buffer.append(OEmbedConnector.getWidgetJson(String.valueOf(DBConnector.getTwitterID(tweet.userID)), String.valueOf(tweet.statusID)).get("html"));
             } catch (FileNotFoundException e) {
                 System.err.println("Tweet with Status ID '" + tweet.statusID + "' not found");
             } catch (IOException e) {

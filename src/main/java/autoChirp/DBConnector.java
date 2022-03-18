@@ -3,13 +3,7 @@ package autoChirp;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -31,22 +25,24 @@ import autoChirp.tweetCreation.TweetGroup;
  *
  * @author Alena Geduldig
  * @editor Philip Schildkamp
+ * @editor Laura Pascale Berg
  *
  */
 public class DBConnector {
 
 	private static Connection connection;
 
+	public static String schema;
 	/**
-	 * connects to a database
+	 * connects to a database with SSL encryption
+	 * if database doesn't exist throw exception to catch in the calling methode
 	 *
-	 * @param dbFilePath
-	 *            file to database
+	 * @param dbPath link to database
 	 * @return connection
 	 *
 	 */
-	public static Connection connect(String dbFilePath) {
-		// register the driver
+
+	public static Connection connect(String dbPath) throws SQLException {
 		try {
 			Class.forName("org.sqlite.JDBC");
 		} catch (ClassNotFoundException e) {
@@ -54,20 +50,45 @@ public class DBConnector {
 			e.printStackTrace();
 		}
 		try {
-			connection = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath);
+			connection = DriverManager.getConnection("jdbc:mysql://" + dbPath + "&verifyServerCertificate=false" + "&useSSL=true" + "&requireSSL=true");
 		} catch (SQLException e) {
-			System.out.print("DBConnector.connect: ");
-			e.printStackTrace();
+			if (e.getErrorCode() == 1049) {
+				throw new SQLException();
+			} else {
+				System.out.print("DBConnector.connect: ");
+				e.printStackTrace();
+			}
 		}
-		System.out.println("Database '" + dbFilePath + "' successfully opened");
+
+		System.out.println("Database '" + dbPath + "' successfully opened");
+		System.out.println(connection);
 		return connection;
 	}
 
 	/**
-	 * creates (or overrides) output-tables defined in dbCreationFileName
+	 * creates database for the case it doesn't exist already
+	 * calls connect to open the newly created db
 	 *
-	 * @param dbCreationFileName
-	 *            file to the db-specification
+	 * @param dbPath link to MySQL for db creation
+	 * @param newDB link to new db
+	 */
+
+	public static void createDatabase (String dbPath, String newDB) {
+		String sql = "CREATE DATABASE IF NOT EXISTS autochirp";
+		try (Connection conn = DriverManager.getConnection("jdbc:mysql://" + dbPath);
+			 PreparedStatement stmt = conn.prepareStatement(sql)){
+			stmt.execute();
+			connect(newDB);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * creates output-tables defined in dbCreationFileName (the schema)
+	 * calls one line of the schema at a time
+	 *
+	 * @param dbCreationFileName file to the db-specification
 	 *
 	 */
 	public static void createOutputTables(String dbCreationFileName) {
@@ -80,6 +101,7 @@ public class DBConnector {
 			while (line != null) {
 				sql.append(line + "\n");
 				line = in.readLine();
+				System.out.println(line);
 			}
 			in.close();
 		} catch (IOException e) {
@@ -89,7 +111,15 @@ public class DBConnector {
 		try {
 			connection.setAutoCommit(false);
 			Statement stmt = connection.createStatement();
-			stmt.executeUpdate(sql.toString());
+
+			//split the Queries to execute them one by one
+			String[] test = sql.toString().split("\n");
+
+			//loop through the array of queries and execute them
+			for (int i = 0; i < test.length; i++) {
+				stmt.executeUpdate(test[i]);
+			}
+			//stmt.executeUpdate(sql.toString());
 			stmt.close();
 			connection.commit();
 			System.out.println("Initialized new output-database.");
@@ -154,8 +184,13 @@ public class DBConnector {
 			connection.commit();
 			// get userID
 			stmt = connection.createStatement();
-			sql = "SELECT last_insert_rowid();";
+
+			// changed from sqlite query to mysql query
+			sql = "SELECT LAST_INSERT_ID() FROM users;";
 			ResultSet result = stmt.executeQuery(sql);
+
+			// result.next() needs to be called to get the current result
+			result.next();
 			toReturn = result.getInt(1);
 			stmt.close();
 			connection.commit();
@@ -189,7 +224,7 @@ public class DBConnector {
 				return toReturn;
 			}
 			toReturn = new String[3];
-			toReturn[0] = Integer.toString(result.getInt(1));
+			toReturn[0] = Long.toString(result.getLong(1));
 			toReturn[1] = result.getString(2);
 			toReturn[2] = result.getString(3);
 			stmt.close();
@@ -213,6 +248,7 @@ public class DBConnector {
 			connection.setAutoCommit(false);
 			Statement stmt = connection.createStatement();
 			ResultSet result = stmt.executeQuery("SELECT Count(*) FROM users;");
+			result.next();
 			toReturn = result.getInt(1);
 			stmt.close();
 			connection.commit();
@@ -238,7 +274,7 @@ public class DBConnector {
 	 *
 	 */
 	public static int insertTweetGroup(TweetGroup tweetGroup, int userID) {
-		int toReturn;
+		int toReturn = 0;
 		try {
 			connection.setAutoCommit(false);
 			PreparedStatement prepGroups = connection
@@ -255,8 +291,11 @@ public class DBConnector {
 			prepGroups.executeUpdate();
 			// get groupID
 			Statement stmt = connection.createStatement();
-			String sql = "SELECT last_insert_rowid();";
+			String sql = "SELECT LAST_INSERT_ID() FROM groups;";
 			ResultSet result = stmt.executeQuery(sql);
+			if (!result.next()) {
+				return toReturn;
+			}
 			int group_id = result.getInt(1);
 			toReturn = group_id;
 			// update table 'tweets'
@@ -418,6 +457,32 @@ public class DBConnector {
 	}
 
 	/**
+	 * method for selecting twitterID out of the users table by userID --> necessary for TwitterWidgetCreator
+	 *
+	 * @param userID
+	 * @return twitterID
+	 */
+	public static long getTwitterID(int userID){
+		long toReturn = 0;
+		try {
+			connection.setAutoCommit(false);
+			Statement stmt = connection.createStatement();
+			String sql = "SELECT twitter_id FROM users WHERE user_id = '" + userID + "'";
+			ResultSet result = stmt.executeQuery(sql);
+			while (result.next()) {
+				toReturn = result.getLong(1);
+			}
+			stmt.close();
+			connection.commit();
+			return toReturn;
+		} catch (SQLException e) {
+			System.out.println("DBConnector.gotTwitterID:");
+			e.printStackTrace();
+			return -1;
+		}
+	}
+
+	/**
 	 * returns a list of all tweets from the specified tweetGroup with the given
 	 * scheduled- and tweeted-status
 	 *
@@ -450,7 +515,7 @@ public class DBConnector {
 				+ "') ORDER BY scheduled_date ASC";
 		return getTweets(query, userID);
 	}
-	
+
 
 
 	/**
@@ -515,13 +580,15 @@ public class DBConnector {
 	 */
 	private static List<Tweet> getTweets(String query, int userID) {
 		List<Tweet> toReturn = new ArrayList<Tweet>();
+		int tempUserID = userID;
 		try {
 			connection.setAutoCommit(false);
 			Statement stmt = connection.createStatement();
 			ResultSet result = stmt.executeQuery(query);
 			while (result.next()) {
+				if (userID == 0){tempUserID = result.getInt(2);}
 				Tweet tweet = new Tweet(result.getString(4), result.getString(5), result.getInt(1), result.getInt(3),
-						result.getBoolean(6), result.getBoolean(7), userID, result.getString(8), result.getFloat(9),
+						result.getBoolean(6), result.getBoolean(7), tempUserID, result.getString(8), result.getFloat(9),
 						result.getFloat(10), result.getLong(11));
 				toReturn.add(tweet);
 			}
@@ -578,6 +645,7 @@ public class DBConnector {
 			connection.setAutoCommit(false);
 			Statement stmt = connection.createStatement();
 			ResultSet result = stmt.executeQuery(query);
+			result.next();
 			toReturn = result.getInt(1);
 			stmt.close();
 			connection.commit();
@@ -679,7 +747,7 @@ public class DBConnector {
 		}
 		return toReturn;
 	}
-	
+
 	/**
 	 * reads a single tweet from the database specified by tweetID (if userID
 	 * fits to tweetID)
@@ -699,7 +767,7 @@ public class DBConnector {
 				return null;
 			}
 			toReturn = new Tweet(result.getString(4), result.getString(5), result.getInt(1), result.getInt(3),
-					result.getBoolean(6), result.getBoolean(7), 0, result.getString(8), result.getFloat(9),
+					result.getBoolean(6), result.getBoolean(7), result.getInt(2), result.getString(8), result.getFloat(9),
 					result.getFloat(10), result.getLong(11));
 		} catch (SQLException e) {
 			System.out.print("DBConnector.getGroupIDsForUser: ");
@@ -707,7 +775,7 @@ public class DBConnector {
 		}
 		return toReturn;
 	}
-	
+
 
 	/**
 	 * returns the groupTitle of the given group (if userID fits to groupID)
@@ -732,7 +800,7 @@ public class DBConnector {
 			e.printStackTrace();
 		}
 		return toReturn;
-	}	
+	}
 
 	/**
 	 * returns the groupTitle of the given group (if userID fits to groupID)
@@ -816,7 +884,7 @@ public class DBConnector {
 	 *            new latitude
 	 */
 	public static void editTweet(int tweetID, String content, int userID, String imageUrl, float longitude,
-			float latitude, String tweetDate) {
+								 float latitude, String tweetDate) {
 		try {
 			connection.setAutoCommit(false);
 			PreparedStatement stmt = connection.prepareStatement(
@@ -841,7 +909,7 @@ public class DBConnector {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * sets the statusID of a published tweet 
 	 * @param tweet
@@ -858,8 +926,8 @@ public class DBConnector {
 			System.out.println("DBConnector.addStatusID: ");
 			e.printStackTrace();
 		}
-		
-		
+
+
 	}
 
 	/**
@@ -891,8 +959,9 @@ public class DBConnector {
 			prepStmt.close();
 			connection.commit();
 			Statement stmt = connection.createStatement();
-			String sql = "SELECT last_insert_rowid();";
+			String sql = "SELECT LAST_INSERT_ID() FROM tweets;";
 			ResultSet result = stmt.executeQuery(sql);
+			result.next();
 			int toReturn = result.getInt(1);
 			stmt.close();
 			prepStmt.close();
@@ -923,6 +992,7 @@ public class DBConnector {
 			String sql = "SELECT enabled FROM groups WHERE (group_id = '" + groupID + "' AND user_id = '" + userID
 					+ "')";
 			ResultSet result = stmt.executeQuery(sql);
+			result.next();
 			boolean enabled = result.getBoolean(1);
 			stmt.close();
 			connection.commit();
@@ -933,7 +1003,7 @@ public class DBConnector {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * @param groupID
 	 * @param userID
@@ -946,6 +1016,7 @@ public class DBConnector {
 			String sql = "SELECT threaded FROM groups WHERE (group_id = '" + groupID + "' AND user_id = '" + userID
 					+ "')";
 			ResultSet result = stmt.executeQuery(sql);
+			result.next();
 			boolean threaded = result.getBoolean(1);
 			stmt.close();
 			connection.commit();
@@ -956,7 +1027,7 @@ public class DBConnector {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * updates the threaded-attribute of the given tweetgroup
 	 * table 'groups'
@@ -981,10 +1052,10 @@ public class DBConnector {
 			return false;
 		}
 		return true;
-		
+
 	}
-	
-	
+
+
 
 	/**
 	 *
@@ -1059,7 +1130,7 @@ public class DBConnector {
 	 * @return  a copy of the given group with updated tweetdates (old date plus delayInSeconds seconds)
 	 */
 	public static TweetGroup createRepeatGroupInSeconds(TweetGroup group, int userID, int delayInSeconds, String newTitle){
-		TweetGroup repeatGroup = new TweetGroup(newTitle, group.description); 
+		TweetGroup repeatGroup = new TweetGroup(newTitle, group.description);
 		repeatGroup.setFlashCard(group.flashcard);
 		List<Tweet> repeatTweets = new ArrayList<Tweet>();
 		Tweet repeatTweet;
@@ -1108,7 +1179,7 @@ public class DBConnector {
 	 * @param userID
 	 * @return returns the status_id of the last published tweet in this tweetgroup
 	 */
-	public static long getReplyID(int tweetID, int groupID, int userID) {	
+	public static long getReplyID(int tweetID, int groupID, int userID) {
 		TweetGroup group = DBConnector.getTweetGroupForUser(userID, groupID);
 		List<Tweet> tweets = group.tweets;
 		long replyID = -1;
@@ -1144,6 +1215,7 @@ public class DBConnector {
 			Statement stmt = connection.createStatement();
 			String sql = "SELECT flashcard FROM groups WHERE (group_id = '"+groupID+"')";
 			ResultSet result = stmt.executeQuery(sql);
+			result.next();
 			String toReturn = result.getString(1);
 			stmt.close();
 			connection.commit();
@@ -1156,13 +1228,13 @@ public class DBConnector {
 	}
 
 
-    /**
-     * Updates a Users token and secret
-     * @param userID The user to update
-     * @param oAuthToken
-     * @param oAuthTokenSecret
-     * @return true if update was successful and false if not
-     */
+	/**
+	 * Updates a Users token and secret
+	 * @param userID The user to update
+	 * @param oAuthToken
+	 * @param oAuthTokenSecret
+	 * @return true if update was successful and false if not
+	 */
 	public static boolean updateUserTokens(int userID, String oAuthToken , String oAuthTokenSecret){
 
 		try {
@@ -1187,5 +1259,5 @@ public class DBConnector {
 
 
 	}
-	
+
 }
