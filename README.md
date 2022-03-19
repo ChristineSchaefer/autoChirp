@@ -20,6 +20,11 @@
  ##### Database update
 
  ##### Short threads
+With the help of threads, it is possible on Twitter to connect several tweets in terms of content or categorically. Thus, additional context, an update to an existing tweet, or a more detailed argument can be added.
+
+In autoChirp, it is possible to create threads within groups. Threading can be enabled or disabled via a button for a group. If enabled, it will then be set to all future tweets from that group that have not yet been posted. So if Threading is turned off after several tweets, but there are still tweets in the group, they will no longer be posted in a thread, but will be posted individually again. So currently threads are set manually by the user. This brings some disadvantages: when importing a table with tweets, it is a much higher effort to create threads for single tweets of a group or the user has to think in advance about which tweets should appear in a thread and put them directly into a separate group or table.
+
+The idea of the short thread is to prevent this problem: when importing a Google or tsv table, it is already possible to classify the tweets into different threads. For each thread a separate group is created automatically and threading is activated. This way, the user no longer has to worry about when to activate and deactivate threading for which tweets.
 
  ##### Image bug
  Problems tweeting the image from https://texperimentales.hypotheses.org/files/2021/12/FFucJwNXsAU5oAo.jpeg using the application lead to an investigation on erroneous image URLs. Several tries were made to find out about the bug's origin and on how to fix it, but no clear pattern behind the bug could be detected. Presumably, it depends on the server holding the image, whether it allows an external application to use it. In the end, it was chosen to stick to improving the error messages displayed to the user and enhance the transparency of the application.
