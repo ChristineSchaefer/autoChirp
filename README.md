@@ -17,8 +17,8 @@
  #### Updates
  In march 2022, three other developers worked on the application and implemented some upgrades. This branch displays two of them:
 
- ##### Image errors
- Problems tweeting the image from https://texperimentales.hypotheses.org/files/2021/12/FFucJwNXsAU5oAo.jpeg using the application lead to an investigation on erroneous image URLs. Several tries were made to find out about the bug's origin and on how to fix it. Unluckily, no clear pattern behind the bug could be detected. Presumably, it depends on the server holding the image, whether it allows an external application to use it. In the end, it was chosen to stick to improving the error messages displayed to the user and enhance the transparency of the application.
+ ##### Image bug
+ Problems tweeting the image from https://texperimentales.hypotheses.org/files/2021/12/FFucJwNXsAU5oAo.jpeg using the application lead to an investigation on erroneous image URLs. Several tries were made to find out about the bug's origin and on how to fix it, but no clear pattern behind the bug could be detected. Presumably, it depends on the server holding the image, whether it allows an external application to use it. In the end, it was chosen to stick to improving the error messages displayed to the user and enhance the transparency of the application.
 
  ##### Automatized switches to/from daylight-saving-time
  Before this update, the application needed to be restarted manually every time the clock had been reset to summer or winter time (Daylight Saving Time, DST). With the applied improvements, this change will now be applied automatically, by defining the time zone used application-wide to "Europe/Berlin".
