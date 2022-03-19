@@ -13,3 +13,11 @@
  
  #### Employed technologies
  This application is build upon the Spring MVC framework (with its Spring Social Twitter module) and uses Thymeleaf as templating-engine while custom styles are written in SASS. Behind the scenes Heideltime and the TreeTagger dig through Wikipedia-articles to find parsable dates and extract those. The fully documented source code of this application can be obtained from our public GitHub repository.
+
+ #### This branch
+ This branch is used to demonstrate a way that could be used to make the whole application usable from all time zones.
+ Introducing the new classes AcceptHeaderLocaleTzCompositeResolver, TzRedirectInterceptor, TzExampleController and tzPage.html, as well as applying changes to some Controller classes and the Application class, it aims to automatically detect the client's time zone. In order to make this process work completely, some work would still need to be done:
+ - combining locale and offset to complete time zone information and include DST
+ - deciding on how to store dates in database: in UTC, or in client's time zone? Is a new field in the DB needed to store time zone information?
+ - displaying all dates correctly to the user (= in his/her own time zone)
+ - testing, efficiency, robustness
