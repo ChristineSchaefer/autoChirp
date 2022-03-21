@@ -18,6 +18,7 @@
  In march 2022, three other developers worked on the application and implemented the following upgrades.
 
  ##### Database update
+By changing the database form a SQLite structure to MySQL the updated version of autochirp is more performant, stable and secure. In the process the schema got a face life, the connector an overhaul and the usability a push in the right direction. By introducing additional SSL certificates the database communication gets encrypted as well. All in all the upgrades makes autochirp ready for another 6 years (or more) of use.  
 
  ##### Short threads
 With the help of threads, it is possible on Twitter to connect several tweets in terms of content or categorically. Thus, additional context, an update to an existing tweet, or a more detailed argument can be added.
@@ -26,6 +27,10 @@ In autoChirp, it is possible to create threads within groups. Threading can be e
 
 The idea of the short thread is to prevent this problem: when importing a Google or tsv table, it is already possible to classify the tweets into different threads. For each thread a separate group is created automatically and threading is activated. This way, the user no longer has to worry about when to activate and deactivate threading for which tweets.
 
- ##### Image errors
+ ##### Image bug
+ Problems tweeting the image from https://texperimentales.hypotheses.org/files/2021/12/FFucJwNXsAU5oAo.jpeg using the application lead to an investigation on erroneous image URLs. Several tries were made to find out about the bug's origin and on how to fix it, but no clear pattern behind the bug could be detected. Presumably, it depends on the server holding the image, whether it allows an external application to use it. In the end, it was chosen to stick to improving the error messages displayed to the user and enhance the transparency of the application.
 
  ##### Automatized switches to/from daylight-saving-time
+ Before this update, the application needed to be restarted manually every time the clock had been reset to summer or winter time (Daylight Saving Time, DST). With the applied improvements, this change will now be applied automatically, by defining the time zone used application-wide to "Europe/Berlin".
+
+
