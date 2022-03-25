@@ -419,11 +419,11 @@ public class DBConnector {
 		try {
 			connection.setAutoCommit(false);
 			Statement stmt = connection.createStatement();
-			String sql = "DELETE FROM groups WHERE group_id = '" + groupID + "' AND user_id = '" + userID + "'";
+			String sql = "DELETE FROM tweets WHERE group_id= '" + groupID + "' AND user_id = '" + userID + "'";
 			stmt.executeUpdate(sql);
 			stmt.close();
 			connection.commit();
-			sql = "DELETE FROM tweets WHERE group_id='" + groupID + "'";
+			sql = "DELETE FROM groups WHERE group_id = '" + groupID + "' AND user_id = '" + userID + "'";
 			stmt = connection.createStatement();
 			stmt.executeUpdate(sql);
 			stmt.close();
