@@ -202,11 +202,57 @@ public class TweetFactory {
 					zdt = lastZDT.plusSeconds(delayInSeconds);
 				}
 
+				// get tweet-image
+				String imageUrl = null;
+				if (split.length > 3) {
+					imageUrl = split[3];
+					if(imageUrl.length() > 0){
+						try {
+							if(ImageIO.read(new URL(imageUrl)) == null){
+								if (!(imageUrl.endsWith(".jpg") || imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".png") || imageUrl.endsWith(".gif") || imageUrl.endsWith(".webp"))) {
+									throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url, wrong format, please use jpg, jpeg, gif, png or webp: "+imageUrl+" (row: "+row+" column: 5)");
+								}
+								throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 5)");
+							}
+						} catch (Exception e) {
+							throw new MalformedTSVFileException(row, 4, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 5)");
+						}
+					}
+				}
+				// get latitude
+				float latitude = 0;
+				float longitude = 0;
+				if (split.length > 4 && !(split[4].isEmpty())) {
+					try{
+						String number = split[4];
+						number = number.replace(",", "\\.");
+						latitude = Float.parseFloat(number);
+					}
+					catch(NumberFormatException e){
+						throw new MalformedTSVFileException(row, 5, split[4], "malformed latitude: "+split[4]+"   (row: "+row+" column: 5)" );
+					}
+					// get longitude
+					if (split.length > 5 && !(split[5].isEmpty())) {
+						try{
+							String number = split[5];
+							number = number.replace(",", "\\.");
+							longitude = Float.parseFloat(split[5]);
+						}
+						catch(NumberFormatException e){
+							throw new MalformedTSVFileException(row, 6, split[5], "malformed longitude: "+split[5]+"   (row: "+row+" column: 6)");
+						}
+					}
+					else{
+						//lattitude without longitude will be ignored
+						latitude = 0;
+					}
+				}
+
 				// new: create thread-groups
 				// connected tweets to a thread are labeled in column "Threading"
 				String thread = null;
-				if(split.length > 3) {
-					thread = split[3].trim();
+				if(split.length > 6) {
+					thread = split[6].trim();
 
 					if (thread.length() > 0) {
 						if (threadGroups.containsKey(thread)) {
@@ -221,52 +267,6 @@ public class TweetFactory {
 				}
 				else {
 					group = threadGroups.get("default");
-				}
-
-				// get tweet-image
-				String imageUrl = null;
-				if (split.length > 4) {
-					imageUrl = split[4];
-					if(imageUrl.length() > 0){
-						try {
-							if(ImageIO.read(new URL(imageUrl)) == null){
-								if (!(imageUrl.endsWith(".jpg") || imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".png") || imageUrl.endsWith(".gif") || imageUrl.endsWith(".webp"))) {
-									throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url, wrong format, please use jpg, jpeg, gif, png or webp: "+imageUrl+" (row: "+row+" column: 5)");
-								}
-								throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 5)");
-							}
-						} catch (Exception e) {
-							throw new MalformedTSVFileException(row, 5, imageUrl, "invalid image-Url: "+imageUrl+" (row: "+row+" column: 5)");
-						}
-					}
-				}
-				// get latitude
-				float latitude = 0;
-				float longitude = 0;
-				if (split.length > 5) {
-					try{
-						String number = split[5];
-						number = number.replace(",", ".");
-						latitude = Float.parseFloat(number);
-					}
-					catch(NumberFormatException e){
-						throw new MalformedTSVFileException(row, 6, split[5], "malformed latitude: "+split[4]+"   (row: "+row+" column: 6)" );
-					}
-					// get longitude
-					if (split.length > 6) {
-						try{
-							String number = split[6];
-							number = number.replace(",", "\\.");
-							longitude = Float.parseFloat(split[6]);
-						}
-						catch(NumberFormatException e){
-							throw new MalformedTSVFileException(row, 7, split[6], "malformed longitude: "+split[5]+"   (row: "+row+" column: 7)");
-						}
-					}
-					else{
-						//lattitude without longitude will be ignored
-						latitude = 0;
-					}
 				}
 				
 				// get tweet-content

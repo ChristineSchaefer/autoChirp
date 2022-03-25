@@ -159,7 +159,8 @@ public class GroupController {
         tweetsList.addAll(old);
 
         // new block: create a list of connected groups of the current group
-        // connected by the same description (result of import by google or tsv table)
+        // connected by the title: first part of title has to be equal
+        // pattern: [title of group]_[anything else]
         List<Integer> tweetGroupIDs = DBConnector.getGroupIDsForUser(userID);
         List<TweetGroup> threadedGroups = new ArrayList<TweetGroup>();
         for (int id : tweetGroupIDs) {
@@ -168,9 +169,15 @@ public class GroupController {
             if (tw.groupID == groupID) {
                 continue;
             }
-            if (tweetGroup.description.equals(tw.description) && !threadedGroups.contains(tw)) {
+            String twName = tw.title;
+            String [] twNameSplit = twName.split("_");
+            String [] tweetGroupSplit = tweetGroup.title.split("_");
+            if(tweetGroupSplit[0].equals(twNameSplit[0]) && !threadedGroups.contains(tw)){
                 threadedGroups.add(tw);
             }
+            /*if (tweetGroup.description.equals(tw.description) && !threadedGroups.contains(tw)) {
+                threadedGroups.add(tw);
+            }*/
             /*if (tweetGroup.title.contains(tw.title)){
                 threadedGroups.add(tw);
             }*/
