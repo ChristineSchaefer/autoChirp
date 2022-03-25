@@ -1105,7 +1105,7 @@ public class DBConnector {
 		try {
 			connection.setAutoCommit(false);
 			Statement stmt = connection.createStatement();
-			String sql = "DELETE FROM users WHERE user_id = '" + userID + "'";
+			String sql = "DELETE FROM tweets WHERE user_id = '" + userID + "'";
 			stmt.executeUpdate(sql);
 			stmt.close();
 			stmt = connection.createStatement();
@@ -1113,7 +1113,7 @@ public class DBConnector {
 			stmt.executeUpdate(sql);
 			stmt.close();
 			stmt = connection.createStatement();
-			sql = "DELETE FROM tweets WHERE user_id = '" + userID + "'";
+			sql = "DELETE FROM users WHERE user_id = '" + userID + "'";
 			stmt.executeUpdate(sql);
 			stmt.close();
 			connection.commit();
